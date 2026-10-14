@@ -1508,25 +1508,37 @@ const needXlsx = () => {
   }).then(ok => { if (!ok) toast('Модуль Excel не загрузился. Проверьте интернет и попробуйте ещё раз.'); return ok; });
   return xlsxP;
 };
-/* HEIC с iPhone: Chrome на Mac его не открывает, поэтому конвертируем heic2any (загружается скриптом только при необходимости) */
+/* HEIC с iPhone. Safari (iPhone, Mac) открывает его сам, поэтому сначала пробуем обычную картинку.
+   Chrome HEIC не открывает: тогда конвертируем библиотекой heic-to (свежий libheif; прежний heic2any не читал фото iOS 18).
+   Библиотека около 3 МБ, грузится только при необходимости, с запасного CDN, если первый недоступен; хеш проверяет, что файл тот самый. */
 const phIsHeic = f => /hei[cf]/i.test(f.type || '') || /\.hei[cf]$/i.test(f.name || '');
-const phLoadHeic = () => new Promise((res, rej) => {
-  if (window.heic2any) return res();
-  const sc = document.createElement('script');
-  sc.src = 'https:\x2F\x2Fcdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-  sc.onload = () => res(); sc.onerror = () => rej(new Error('cdn'));
-  document.head.appendChild(sc);
-});
+const HEIC_SRC = ['https:\x2F\x2Fcdn.jsdelivr.net/npm/heic-to@1.5.2/dist/iife/heic-to.js', 'https:\x2F\x2Funpkg.com/heic-to@1.5.2/dist/iife/heic-to.js'];
+const HEIC_SRI = 'sha384-cVm8gaWQ5+URpoh6ACKXpm8TuyoHkfIDDBkxvDoUdIZ18w8nV5en0lVQvWMwO/6S';
+let heicP = null;
+const phLoadHeic = () => heicP || (heicP = (async () => {
+  for (const u of HEIC_SRC) {
+    if (typeof window.HeicTo === 'function') break;
+    await new Promise(res => { const sc = document.createElement('script'); sc.src = u; sc.integrity = HEIC_SRI; sc.crossOrigin = 'anonymous'; sc.onload = sc.onerror = () => res(); document.head.appendChild(sc); });
+  }
+  if (typeof window.HeicTo !== 'function') { heicP = null; throw new Error('Не загрузился модуль для HEIC-фото. Проверьте интернет и попробуйте ещё раз.'); }
+  return window.HeicTo;
+})());
+/* Готовая картинка из файла; HEIC при необходимости переводится в JPEG */
+async function phOpen(file) {
+  const url = URL.createObjectURL(file);
+  try { return await phImg(url); }
+  catch (e) { if (!phIsHeic(file)) throw new Error('Не удалось открыть фото. Сохраните его как JPEG или PNG и загрузите снова.'); }
+  finally { URL.revokeObjectURL(url); }
+  const conv = await phLoadHeic();
+  let jpg;
+  try { jpg = await conv({ blob: file, type: 'image/jpeg', quality: 0.92 }); }
+  catch (e) { console.error('heic', e); throw new Error('Не удалось открыть это HEIC-фото. Сохраните его как JPEG и загрузите снова.'); }
+  const u2 = URL.createObjectURL(jpg);
+  try { return await phImg(u2); } finally { URL.revokeObjectURL(u2); }
+}
 /* Полное фото до 1 МБ и миниатюра, оба JPEG в base64 */
 async function phPrep(file) {
-  let src = file;
-  if (phIsHeic(file)) {
-    try { await phLoadHeic(); const out = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 }); src = Array.isArray(out) ? out[0] : out; }
-    catch (e) { throw new Error('Не удалось открыть HEIC-фото. Проверьте интернет или сохраните фото как JPEG и загрузите снова.'); }
-  }
-  let img;
-  try { img = await phImg(URL.createObjectURL(src)); }
-  catch (e) { throw new Error('Не удалось открыть фото. Сохраните его как JPEG или PNG и загрузите снова.'); }
+  const img = await phOpen(file);
   let side = 2400, q = 0.9, blob = null;
   for (let i = 0; i < 12; i++) { blob = await phJpeg(img, side, q); if (blob && blob.size <= PH_BYTES) break; if (q > 0.55) q -= 0.1; else side = Math.round(side * 0.8); }
   if (!blob || blob.size > PH_BYTES) throw new Error('Фото не удалось сжать до 1 МБ. Выберите другое фото.');
@@ -3809,13 +3821,7 @@ $('#who').onclick = () => openCabinet();
 
 /* Аватар: квадрат 160×160 JPEG, обрезка по центру. */
 async function avatarPrep(file) {
-  let src = file;
-  if (phIsHeic(file)) {
-    try { await phLoadHeic(); const out = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 }); src = Array.isArray(out) ? out[0] : out; }
-    catch (e) { throw new Error('Не удалось открыть HEIC-фото. Сохраните его как JPEG и загрузите снова.'); }
-  }
-  let img;
-  try { img = await phImg(URL.createObjectURL(src)); } catch (e) { throw new Error('Не удалось открыть фото. Выберите JPEG или PNG.'); }
+  const img = await phOpen(file);
   const side = 160, c = document.createElement('canvas'), w = img.naturalWidth, h = img.naturalHeight, k = Math.min(w, h);
   c.width = c.height = side;
   c.getContext('2d').drawImage(img, (w - k) / 2, (h - k) / 2, k, k, 0, 0, side, side);
