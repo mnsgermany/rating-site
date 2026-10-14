@@ -179,7 +179,7 @@ table.t{width:100%;border-collapse:collapse}
 .prog i{display:block;height:100%;background:var(--accent);border-radius:4px}
 
 /* teams */
-.tms{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.tms{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:12px}
 .tm{padding:16px;display:flex;flex-direction:column;gap:12px}
 .tm h3{margin:0;font-size:16px;font-weight:600;overflow-wrap:anywhere}
 .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -825,6 +825,15 @@ button.fi:active{transform:scale(.995)}
 .tm.mine{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
 .kv.k4{grid-template-columns:repeat(2,1fr)}
 .kv.k4 div{min-width:0}
+/* карточка коллектива: содержимое никогда не выходит за её края */
+.tm{min-width:0;overflow:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.tm .kv div{min-width:0;overflow:hidden}
+.tm .kv b,.tm .kv span,.tm .hint{overflow-wrap:anywhere}
+.tm .kv span{display:block;line-height:1.25}
+.tm>.row:last-child{flex-wrap:wrap}
+.tm>.row:last-child>span{display:flex;margin-left:auto}
+.tm .btn{min-width:0;max-width:100%}
+.tm .gp{max-width:100%;white-space:normal}
 /* 4 в ряд только когда широка сама карточка, а не окно: на ПК карточки узкие */
 .tm{container-type:inline-size}
 @container (min-width:400px){.kv.k4{grid-template-columns:repeat(4,1fr)}}
