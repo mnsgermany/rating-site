@@ -371,6 +371,9 @@ body.ro .ag .mk{cursor:default}
 .mlist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .mrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line)}
 .mrow:last-child{border-bottom:0}
+.mrow .seg{flex:none}
+.rsvp{display:block;margin-top:2px;font-size:12.5px;color:var(--muted)}
+.rsvp.y{color:var(--accent)}
 .mrow .nm{min-width:0}
 .mrow .nm b{font-weight:600;display:block;overflow-wrap:anywhere}
 .mrow .nm small{color:var(--muted);font-size:12.5px}
@@ -2623,9 +2626,16 @@ function newSession(teamId) {
   const d0 = localToday(), sl = schedOf(t), today0 = sl.find(x => +x.dow === dowOf(d0)) || sl[0];
   const L = openSheet({ title: `Занятие: ${t.name}` });
   L.body.innerHTML = `<div class="grid2"><div><label class="lbl" for="nD">Дата</label><input class="fld" id="nD" type="date" value="${d0}"></div><div><label class="lbl" for="nT">Время</label><input class="fld" id="nT" type="time" value="${esc(today0 ? today0.start : '')}"></div></div>
-    <label class="lbl" for="nTp">Тема занятия <span class="muted">· необязательно</span></label><input class="fld" id="nTp" placeholder="Например, репетиция к концерту"><div id="nErr"></div>`;
+    <label class="lbl" for="nTp">Тема занятия <span class="muted">· необязательно</span></label><input class="fld" id="nTp" placeholder="Например, репетиция к концерту">
+    <div id="nNtW"><label class="chk" style="margin-top:12px"><input type="checkbox" id="nNt" checked> Сообщить участникам в Telegram и MAX</label>
+    <p class="hint" style="margin:4px 0 0">Участники сразу получат сообщение с кнопками «Буду» и «Меня не будет», а за 2 часа до начала напоминание. Ответы придут вам в бот и появятся в карточке занятия.</p></div><div id="nErr"></div>`;
+  // занятие, которое уже началось, — это просто отметка посещаемости: уведомлять некого
+  const ahead = () => { const d = $('#nD', L.body).value, t = $('#nT', L.body).value || '23:59'; return !!d && new Date(d + 'T' + t) > new Date(); };
+  const syncNt = () => { $('#nNtW', L.body).hidden = !ahead(); };
+  $('#nT', L.body).addEventListener('input', syncNt);
+  syncNt();
   L.foot.innerHTML = '<button class="btn" data-close>Отмена</button><button class="btn pri" data-ok>Создать и отметить</button>';
-  $('#nD', L.body).addEventListener('change', e => { const s = sl.find(x => +x.dow === dowOf(e.target.value)); if (s) $('#nT', L.body).value = s.start; });
+  $('#nD', L.body).addEventListener('change', e => { const s = sl.find(x => +x.dow === dowOf(e.target.value)); if (s) $('#nT', L.body).value = s.start; syncNt(); });
   $('[data-ok]', L.foot).onclick = async ev => {
     const btn = ev.currentTarget;
     const date = $('#nD', L.body).value, time = $('#nT', L.body).value;
@@ -2634,7 +2644,7 @@ function newSession(teamId) {
     if (ex) { closeSheet(L); toast('Такое занятие уже есть — открываю его'); setTimeout(() => openSession(ex.id), 220); return; }
     if (!(await spellGate(L, [{ el: $('#nTp', L.body), label: 'Тема' }], btn))) return;
     const id = newId(); btn.disabled = true;
-    try { await safe(() => S.db.doc('sessions/' + id).set({ teamId, date, time, topic: clean($('#nTp', L.body).value), marks: {}, createdAt: Date.now() })); S.att.ym = date.slice(0, 7); closeSheet(L); setTimeout(() => openSession(id), 220); }
+    try { await safe(() => S.db.doc('sessions/' + id).set({ teamId, date, time, topic: clean($('#nTp', L.body).value), marks: {}, createdAt: Date.now(), notify: ahead() && $('#nNt', L.body).checked })); S.att.ym = date.slice(0, 7); closeSheet(L); setTimeout(() => openSession(id), 220); }
     catch (er) { btn.disabled = false; }
   };
 }
@@ -2647,11 +2657,13 @@ function openSession(id) {
     L.setTitle(`${t.name}: ${fmtD(s.date)}`);
     const members = S.members.filter(m => inTeam(m, s.teamId) || (s.marks || {})[m.id]).sort((a, b) => coll.compare(a.fio, b.fio));
     const p = members.filter(m => markOf(s, m.id) === 'p').length, dis = S.canWrite ? '' : 'disabled';
+    const rv = s.rsvp || {}, ry = members.filter(m => (rv[m.id] || {}).s === 'y').length, rn = members.filter(m => (rv[m.id] || {}).s === 'n').length;
+    const rTag = m => { const r = rv[m.id]; return !r || !r.s ? '' : r.s === 'y' ? '<span class="rsvp y">Ответ: буду</span>' : `<span class="rsvp">Ответ: не будет${r.c ? ' · ' + esc(r.c) : ''}</span>`; };
     const st = L.body.scrollTop;
-    L.body.innerHTML = `<div class="evh"><span class="pill num">${I.cal.replace('class="i"', 'class="i" style="width:14px;height:14px"')}${DOW_L[dowOf(s.date)]}, ${fmtD(s.date)}${s.time ? ', ' + esc(s.time) : ''}</span><span class="pill acc num">Присутствует ${p} из ${members.length}</span></div>
+    L.body.innerHTML = `<div class="evh"><span class="pill num">${I.cal.replace('class="i"', 'class="i" style="width:14px;height:14px"')}${DOW_L[dowOf(s.date)]}, ${fmtD(s.date)}${s.time ? ', ' + esc(s.time) : ''}</span><span class="pill acc num">Присутствует ${p} из ${members.length}</span>${ry + rn ? `<span class="pill num" title="Ответы участников в Telegram и MAX">Будут ${ry} · не будут ${rn}</span>` : ''}</div>
       ${s.topic ? `<p style="margin:0 0 12px"><span class="muted">Тема:</span> ${esc(s.topic)}</p>` : ''}
       ${S.canWrite ? `<div class="row2" style="margin-bottom:10px"><button class="btn" data-all="p">Все присутствуют</button><button class="btn ghost" data-all="">Очистить отметки</button></div>` : ''}
-      ${members.length ? `<div class="mlist">${members.map(m => { const v = markOf(s, m.id); return `<div class="mrow"><div class="nm"><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, m.rank].filter(Boolean).join(' · '))}</small></div>
+      ${members.length ? `<div class="mlist">${members.map(m => { const v = markOf(s, m.id); return `<div class="mrow"><div class="nm"><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, m.rank].filter(Boolean).join(' · '))}</small>${rTag(m)}</div>
         <div class="seg" role="group" aria-label="${esc(m.fio)}">${['p', 'a', 'e'].map(k => `<button data-st="${k}" data-m="${m.id}" aria-pressed="${v === k}" title="${ST_L[k]}" ${dis}>${SYM[k]}</button>`).join('')}</div></div>`; }).join('')}</div>`
       : '<p class="hint">В коллективе пока нет участников.</p>'}`;
     L.body.scrollTop = st;
