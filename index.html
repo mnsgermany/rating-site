@@ -837,6 +837,24 @@ button.fi:active{transform:scale(.995)}
 /* 4 в ряд только когда широка сама карточка, а не окно: на ПК карточки узкие */
 .tm{container-type:inline-size}
 @container (min-width:400px){.kv.k4{grid-template-columns:repeat(4,1fr)}}
+/* задачи коллектива */
+.tm>.row:last-child{justify-content:flex-start}
+.tk-n{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-left:2px;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:600}
+.tk-l{display:flex;flex-direction:column;gap:10px}
+.tk{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);min-width:0}
+.tk.ok{background:var(--surface-2)}
+.tk.ok .tk-t b{text-decoration:line-through;color:var(--muted)}
+.tk-h{display:flex;gap:8px;align-items:flex-start}
+.tk-t{flex:1;min-width:0}
+.tk-t b{display:block;font-weight:600;overflow-wrap:anywhere}
+.tk-t p{margin:4px 0 0;font-size:14px;color:var(--muted);white-space:pre-line;overflow-wrap:anywhere}
+.tk-t small{display:block;margin-top:4px;font-size:12.5px;color:var(--muted)}
+.tk-t small.late{color:var(--danger);font-weight:500}
+.tk-h .ib{width:34px;height:34px;margin:-6px -6px 0 0;flex:none}
+.tk-p{display:flex;align-items:center;gap:10px;margin-top:10px}
+.tk-p input{flex:1;min-width:0;accent-color:var(--accent);margin:0}
+.tk-v{min-width:46px;text-align:right;font-weight:600}
+.tk.ok .tk-v{color:var(--good)}
 /* журнал заходов */
 .vs-k{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
 .vs-k div{background:var(--surface-2);border-radius:10px;padding:10px 12px}
@@ -1017,7 +1035,7 @@ const DEF_RULES = {
 };
 const DEF_LEVEL = ['Внутреннее', 'Городское', 'Региональное', 'Всероссийское', 'Международное'];
 
-const S = { db: null, canWrite: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false },
+const S = { db: null, canWrite: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false },
   view: 'feed', feedN: 12, teamMode: 'sum', sort: { key: 'rating', dir: 'desc' }, q: '', team: '', eq: '', ratings: new Map(), places: new Map() };
 
 /* ---------- toast ---------- */
@@ -1882,7 +1900,7 @@ function renderTeams() {
     <div class="kv k4"><div><b>${r.n}</b><span>${plural(r.n, 'участник', 'участника', 'участников')}</span></div><div><b>${fmtN(r.sum)}</b><span>сумма баллов</span></div><div><b>${fmtN(Math.round(r.avg * 10) / 10)}</b><span>в среднем</span></div><div><b>${r.att == null ? '—' : r.att + '%'}</b><span>явка за 30 дней</span></div></div>
     ${r.best && (S.ratings.get(r.best.id)?.total || 0) > 0 ? `<div class="hint" style="margin:0">Лучший: <b style="color:var(--ink)">${esc(r.best.fio)}</b></div>` : ''}
     ${r.t.leader || schedOf(r.t).length ? `<div class="hint" style="margin:0">${r.t.leader ? `Руководитель: ${(u => u ? avaHtml(u, r.t.leader, 's') : '')(avaOfLeader(r.t.leader))}<b style="color:var(--ink)">${esc(r.t.leader)}</b>` : ''}${r.t.leader && schedOf(r.t).length ? '<br>' : ''}${esc(schedOf(r.t).map(slotTxt).join(', '))}</div>` : ''}
-    <div class="row"><button class="btn" data-show="${r.t.id}">${I.users}Участники</button><span><button class="ib" data-att="${r.t.id}" aria-label="Посещаемость" title="Посещаемость">${I.check}</button><button class="ib" data-w data-ren="${r.t.id}" aria-label="Переименовать">${I.edit}</button><button class="ib" data-w data-delt="${r.t.id}" aria-label="Удалить">${I.trash}</button></span></div></div>`).join('');
+    <div class="row"><button class="btn" data-show="${r.t.id}">${I.users}Участники</button>${canTasks(r.t) ? (n => `<button class="btn" data-tasks="${r.t.id}">${I.task}Задачи${n ? `<span class="tk-n num" title="Не выполнено">${n}</span>` : ''}</button>`)(teamTasks(r.t.id).filter(x => pctOf(x) < 100).length) : ''}<span><button class="ib" data-att="${r.t.id}" aria-label="Посещаемость" title="Посещаемость">${I.check}</button><button class="ib" data-w data-ren="${r.t.id}" aria-label="Переименовать">${I.edit}</button><button class="ib" data-w data-delt="${r.t.id}" aria-label="Удалить">${I.trash}</button></span></div></div>`).join('');
 }
 async function teamSheet(id) {
   const t = id && S.teams.find(x => x.id === id);
@@ -1911,6 +1929,7 @@ async function teamSheet(id) {
 $('#tList').addEventListener('click', async e => {
   const at = e.target.closest('[data-att]'); if (at) { S.att.teamId = at.dataset.att; setView('attendance'); return; }
   const s = e.target.closest('[data-show]'); if (s) { S.team = s.dataset.show; setView('members'); return; }
+  const tk = e.target.closest('[data-tasks]'); if (tk) return tasksSheet(tk.dataset.tasks);
   const r = e.target.closest('[data-ren]'); if (r) return teamSheet(r.dataset.ren);
   const d = e.target.closest('[data-delt]');
   if (d) {
@@ -1920,6 +1939,78 @@ $('#tList').addEventListener('click', async e => {
     toast('Коллектив удалён');
   }
 });
+
+/* ---------- задачи коллектива: видят и меняют только его руководитель и администратор (сервер проверяет то же) ---------- */
+I.task = '<svg class="i" viewBox="0 0 24 24"><rect x="5" y="4.5" width="14" height="16" rx="2"/><path d="M9 4.5V3h6v1.5M9 12l2 2 4-4M9 17h6"/></svg>';
+const canTasks = t => { const me = Auth.me; if (!me || !t) return false; if (me.role === 'admin') return true; return me.role === 'leader' && !!me.leader && norm(t.leader) === norm(me.leader); };
+const pctOf = x => Math.max(0, Math.min(100, Math.round(Number(x && x.percent) || 0)));
+/* сначала невыполненные, по сроку; без срока — в конце */
+const teamTasks = tid => S.tasks.filter(x => x.teamId === tid).sort((a, b) => (pctOf(a) >= 100) - (pctOf(b) >= 100) || String(a.deadline || '9999').localeCompare(String(b.deadline || '9999')) || (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0));
+function taskRow(x) {
+  const p = pctOf(x), late = !!x.deadline && p < 100 && x.deadline < ymdOf(Date.now());
+  return `<div class="tk${p >= 100 ? ' ok' : ''}"><div class="tk-h"><div class="tk-t"><b>${esc(x.title)}</b>${x.text ? `<p>${esc(x.text)}</p>` : ''}${x.deadline ? `<small class="${late ? 'late' : ''}">Срок: ${esc(fmtD(x.deadline))}${late ? ' · просрочено' : ''}</small>` : ''}</div><button class="ib" type="button" data-tedit="${esc(x.id)}" aria-label="Изменить задачу">${I.edit}</button></div>
+    <div class="tk-p"><input type="range" min="0" max="100" step="5" value="${p}" data-tpct="${esc(x.id)}" aria-label="Выполнено, процентов"><span class="tk-v num">${p}%</span></div></div>`;
+}
+function tasksSheet(tid) {
+  const t = S.teams.find(x => x.id === tid);
+  if (!t || !canTasks(t) || !S.db) { toast('Задачи коллектива видят только его руководитель и администратор'); return; }
+  const L = openSheet({ title: 'Задачи: ' + t.name, wide: true });
+  L.foot.innerHTML = `<button class="btn" data-close>Закрыть</button><button class="btn pri" data-tadd>${I.plus}Добавить задачу</button>`;
+  $('[data-tadd]', L.foot).onclick = () => taskSheet(tid, null);
+  let sig = null;
+  const draw = () => {
+    if (!S.teams.some(x => x.id === tid)) { closeSheet(L); return; }
+    const list = teamTasks(tid), s = JSON.stringify(list);
+    if (s === sig) return; // не перерисовываем, пока данные те же: ползунок не сбрасывается под пальцем
+    sig = s;
+    const done = list.filter(x => pctOf(x) >= 100).length;
+    L.body.innerHTML = !list.length
+      ? `<div class="empty"><div class="eic">${I.task}</div><h3>Задач пока нет</h3><p>Добавьте задачу, поставленную руководством, и отмечайте, на сколько процентов она выполнена.</p></div>`
+      : `<p class="hint" style="margin:0 0 10px">Выполнено ${done} из ${list.length}. Задачи видят только руководитель коллектива и администратор.</p><div class="tk-l">${list.map(taskRow).join('')}</div>`;
+  };
+  L.body.addEventListener('click', e => { const b = e.target.closest('[data-tedit]'); if (b) taskSheet(tid, b.dataset.tedit); });
+  L.body.addEventListener('input', e => { const r = e.target.closest('[data-tpct]'); if (r) $('.tk-v', r.parentNode).textContent = r.value + '%'; });
+  L.body.addEventListener('change', async e => {
+    const r = e.target.closest('[data-tpct]'); if (!r) return;
+    const v = +r.value;
+    try { await safe(() => S.db.doc('tasks/' + r.dataset.tpct).update({ percent: v, updatedAt: Date.now() })); toast(v >= 100 ? 'Задача выполнена' : `Выполнено ${v}%`); }
+    catch (er) { sig = null; draw(); }
+  });
+  L.refresh = draw; draw();
+}
+function taskSheet(tid, id) {
+  const x = id ? S.tasks.find(q => q.id === id) : null;
+  if (id && !x) { toast('Задачу уже удалили'); return; }
+  const p0 = x ? pctOf(x) : 0;
+  const L = openSheet({ title: x ? 'Изменить задачу' : 'Новая задача' });
+  L.body.innerHTML = `<label class="lbl" for="tkT">Задача</label><input class="fld" id="tkT" maxlength="200" value="${esc(x ? x.title : '')}" placeholder="Например, Подготовить номер к концерту">
+    <label class="lbl" for="tkX">Описание <span class="muted">· необязательно</span></label><textarea class="fld" id="tkX" rows="4" maxlength="2000" placeholder="Кто поставил задачу, что именно нужно сделать">${esc(x ? x.text || '' : '')}</textarea>
+    <label class="lbl" for="tkD">Срок <span class="muted">· необязательно</span></label><input class="fld" id="tkD" type="date" value="${esc(x ? x.deadline || '' : '')}">
+    <label class="lbl" for="tkP">Выполнено</label><div class="tk-p"><input type="range" id="tkP" min="0" max="100" step="5" value="${p0}"><span class="tk-v num" id="tkPv">${p0}%</span></div>
+    <div id="tkErr"></div>`;
+  L.foot.innerHTML = `${x ? '<button class="btn dng" data-del>Удалить</button>' : ''}<span class="sp"></span><button class="btn" data-close>Отмена</button><button class="btn pri" data-ok>${x ? 'Сохранить' : 'Добавить'}</button>`;
+  $('#tkP', L.body).oninput = e => { $('#tkPv', L.body).textContent = e.target.value + '%'; };
+  const save = async () => {
+    const b = $('[data-ok]', L.foot);
+    if (!clean($('#tkT', L.body).value)) { $('#tkErr', L.body).innerHTML = `<div class="err">${I.alert}<span>Напишите, что нужно сделать.</span></div>`; return; }
+    $('#tkErr', L.body).innerHTML = '';
+    if (!(await spellGate(L, [{ el: $('#tkT', L.body), label: 'Задача' }, { el: $('#tkX', L.body), label: 'Описание' }], b))) return;
+    const d = { title: clean($('#tkT', L.body).value), text: String($('#tkX', L.body).value || '').replace(/\r/g, '').trim(), deadline: $('#tkD', L.body).value, percent: +$('#tkP', L.body).value, updatedAt: Date.now() };
+    b.disabled = true;
+    try {
+      if (x) await S.db.doc('tasks/' + x.id).update(d);
+      else await S.db.collection('tasks').doc().set({ ...d, teamId: tid, author: Auth.me ? Auth.me.fio : '', createdAt: Date.now() });
+      closeSheet(L); toast(x ? 'Сохранено' : 'Задача добавлена');
+    } catch (er) { console.error(er); toast(dbErr(er)); b.disabled = false; }
+  };
+  $('[data-ok]', L.foot).onclick = save;
+  $('#tkT', L.body).onkeydown = e => { if (e.key === 'Enter') save(); };
+  if (x) $('[data-del]', L.foot).onclick = async () => {
+    if (!(await confirmSheet(`Удалить задачу «${x.title}»?`))) return;
+    try { await safe(() => S.db.doc('tasks/' + x.id).delete()); closeSheet(L); toast('Задача удалена'); } catch (er) {}
+  };
+  setTimeout(() => $('#tkT', L.body).focus(), 60);
+}
 
 /* ---------- import / export ---------- */
 const COLS = [['fio', /фио|ф\.и\.о|фамилия/], ['group', /групп/], ['position', /должн/], ['rank', /звани/], ['team', /коллектив|подразделен|отряд/]];
@@ -3659,7 +3750,7 @@ async function holdLock(L, key) {
   return { ok: true };
 }
 window.addEventListener('pagehide', () => { layers.slice().forEach(L => { if (L.onClose) { try { L.onClose(); } catch (e) {} L.onClose = null; } }); });
-const Store = { locks: {}, ver: null, data: { members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [] }, subs: {}, token: lsGet('reiting_tok'), timer: 0, fails: 0 };
+const Store = { locks: {}, ver: null, data: { members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [] }, subs: {}, token: lsGet('reiting_tok'), timer: 0, fails: 0 };
 /* ---------- кэш в браузере (IndexedDB): база, профиль, аватары, фото ----------
  * Ссылка открывается сразу с данными прошлого визита, а сервер лишь подтверждает, что они свежие.
  * Миниатюры и фото хранятся здесь же: файлы на Диске не меняются, поэтому повторно не скачиваются.
@@ -3717,7 +3808,7 @@ function applyState(st) {
   Store.ver = st.version;
   if (st.role && Auth.me && st.role !== Auth.me.role) refreshMe();
   /* после сохранения сервер присылает только изменённые разделы */
-  const keys = st.partial ? Object.keys(st.data || {}) : ['members', 'teams', 'events', 'officials', 'sessions', 'settings', 'news'];
+  const keys = st.partial ? Object.keys(st.data || {}) : ['members', 'teams', 'events', 'officials', 'sessions', 'settings', 'news', 'tasks'];
   for (const k of keys) { Store.data[k] = st.data[k] || []; emit(k); }
   saveState();
   if (keys.includes('events')) thPrefetchSoon();
@@ -4027,7 +4118,7 @@ function openBots() {
 
 function boot() {
   if (!hasApi()) {
-    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true }; S.canWrite = false; document.body.classList.add('ro');
+    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true, k: true }; S.canWrite = false; document.body.classList.add('ro');
     $('#noDb').textContent = 'Это файл приложения. Он работает, когда открыт по ссылке веб-приложения Google Apps Script.';
     $('#noDb').hidden = false; setSync(false, 'Нет базы'); render(); return;
   }
@@ -4037,6 +4128,7 @@ function boot() {
   });
   sub('members', 'members', 'm'); sub('teams', 'teams', 't'); sub('events', 'events', 'e');
   sub('officials', 'officials', 'o'); sub('sessions', 'sessions', 's'); sub('settings', 'settings', 'g'); sub('news', 'news', 'n');
+  sub('tasks', 'tasks', 'k');
   startSession();
 }
 render();
