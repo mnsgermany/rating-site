@@ -372,8 +372,18 @@ body.ro .ag .mk{cursor:default}
 .mrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line)}
 .mrow:last-child{border-bottom:0}
 .mrow .seg{flex:none}
-.rsvp{display:block;margin-top:2px;font-size:12.5px;color:var(--muted)}
-.rsvp.y{color:var(--accent)}
+.mrow.rv-y{background:color-mix(in srgb,var(--good) 10%,transparent);box-shadow:inset 4px 0 0 var(--good)}
+.mrow.rv-n{background:var(--danger-soft);box-shadow:inset 4px 0 0 var(--danger)}
+.rsvp{display:inline-block;margin-top:4px;padding:1px 8px;border-radius:20px;font-size:12px;font-weight:600}
+.rsvp.y{color:var(--good);background:color-mix(in srgb,var(--good) 16%,transparent)}
+.rsvp.n{color:var(--danger);background:color-mix(in srgb,var(--danger) 14%,transparent)}
+.rsvp-why{margin-top:4px;font-size:13px}
+.rsvp-why summary{cursor:pointer;color:var(--danger);font-weight:500}
+.rsvp-why p{margin:4px 0 0;color:var(--ink);overflow-wrap:anywhere}
+.ag td.rv-y .mk{box-shadow:inset 0 -4px 0 var(--good)}
+.ag td.rv-n .mk{box-shadow:inset 0 -4px 0 var(--danger)}
+.ag td.rv-y .mk[data-v=""]{background:color-mix(in srgb,var(--good) 10%,transparent)}
+.ag td.rv-n .mk[data-v=""]{background:var(--danger-soft)}
 .mrow .nm{min-width:0}
 .mrow .nm b{font-weight:600;display:block;overflow-wrap:anywhere}
 .mrow .nm small{color:var(--muted);font-size:12.5px}
@@ -2567,8 +2577,9 @@ function renderAttendance() {
     ${!rows.length ? `<div class="card"><div class="empty"><p>В коллективе «${esc(t.name)}» пока нет участников. Укажите коллектив в карточке участника.</p></div></div>`
     : !sessions.length ? `<div class="card"><div class="empty"><div class="eic">${I.check}</div><h3>В этом месяце занятий не отмечено</h3><p>Нажмите «Отметить занятие», чтобы создать занятие и отметить присутствующих.</p></div></div>`
     : `<div class="card grid-w"><table class="ag"><thead><tr><th class="nm">Участник</th>${sessions.map(s => `<th><button data-sess="${s.id}" title="${esc(s.topic || 'Открыть занятие')}"><b class="num">${+String(s.date).slice(8, 10)}</b><small>${DOW[dowOf(s.date)]} ${esc(s.time || '')}</small></button></th>`).join('')}<th class="pc">Явка</th><th class="pc">Баллы</th></tr></thead>
-      <tbody>${rows.map(r => { const st = stat(r); return `<tr><td class="nm">${esc(r.fio)}${extra.has(r.id) ? ' <small class="muted">(не в коллективе)</small>' : ''}</td>${sessions.map(s => { const v = markOf(s, r.id); return `<td><button class="mk" data-mk="${s.id}|${r.id}" data-v="${v}" aria-label="${esc(r.fio)}, ${esc(fmtD(s.date))}: ${ST_L[v]}">${SYM[v]}</button></td>`; }).join('')}<td class="pc">${st.pct == null ? '—' : st.pct + '%'}</td><td class="pc num">${fmtAtt(attPts(t.id, r.id))}</td></tr>`; }).join('')}</tbody>
-      <tfoot><tr><td class="nm">Присутствовало</td>${sessions.map(s => `<td class="num">${rows.filter(r => markOf(s, r.id) === 'p').length}</td>`).join('')}<td></td><td></td></tr></tfoot></table></div>
+      <tbody>${rows.map(r => { const st = stat(r); return `<tr><td class="nm">${esc(r.fio)}${extra.has(r.id) ? ' <small class="muted">(не в коллективе)</small>' : ''}</td>${sessions.map(s => { const v = markOf(s, r.id), rv = (s.rsvp || {})[r.id] || {}, rs = rv.s === 'y' ? 'ответил «буду»' : rv.s === 'n' ? 'ответил «не буду»' + (rv.c ? ': ' + rv.c : '') : '';
+        return `<td${rs ? ` class="rv-${rv.s}" title="${esc(rs)}"` : ''}><button class="mk" data-mk="${s.id}|${r.id}" data-v="${v}" aria-label="${esc(r.fio)}, ${esc(fmtD(s.date))}: ${ST_L[v]}${rs ? ', ' + esc(rs) : ''}">${SYM[v]}</button></td>`; }).join('')}<td class="pc">${st.pct == null ? '—' : st.pct + '%'}</td><td class="pc num">${fmtAtt(attPts(t.id, r.id))}</td></tr>`; }).join('')}</tbody>
+      <tfoot><tr><td class="nm">Присутствовало</td>${sessions.map(s => `<td class="num">${rows.filter(r => markOf(s, r.id) === 'p').length}</td>`).join('')}<td></td><td></td></tr></tfoot></table></div>${sessions.some(s => Object.keys(s.rsvp || {}).length) ? '<p class="hint">Полоска под отметкой: зелёная — участник ответил в боте «Буду», красная — «Меня не будет». Причину видно при наведении и в карточке занятия.</p>' : ''}
       <div class="legend"><span><i style="color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)">✓</i>присутствовал</span><span><i style="color:var(--danger);background:var(--danger-soft)">Н</i>отсутствовал</span><span><i style="color:var(--accent);background:var(--accent-soft)">У</i>уважительная причина</span><span>Баллы: присутствовал +3, отсутствовал без причины −5, по уважительной причине 0.</span><span>Нажатие на клетку меняет отметку. Нажатие на дату открывает занятие.</span></div>`}`;
 }
 $('#attTeam').addEventListener('change', e => { S.att.teamId = e.target.value; renderAttendance(); });
@@ -2658,12 +2669,14 @@ function openSession(id) {
     const members = S.members.filter(m => inTeam(m, s.teamId) || (s.marks || {})[m.id]).sort((a, b) => coll.compare(a.fio, b.fio));
     const p = members.filter(m => markOf(s, m.id) === 'p').length, dis = S.canWrite ? '' : 'disabled';
     const rv = s.rsvp || {}, ry = members.filter(m => (rv[m.id] || {}).s === 'y').length, rn = members.filter(m => (rv[m.id] || {}).s === 'n').length;
-    const rTag = m => { const r = rv[m.id]; return !r || !r.s ? '' : r.s === 'y' ? '<span class="rsvp y">Ответ: буду</span>' : `<span class="rsvp">Ответ: не будет${r.c ? ' · ' + esc(r.c) : ''}</span>`; };
+    const rCls = m => { const r = rv[m.id]; return r && (r.s === 'y' || r.s === 'n') ? ' rv-' + r.s : ''; };
+    const rTag = m => { const r = rv[m.id]; return !r || !r.s ? '' : r.s === 'y' ? '<span class="rsvp y">Будет</span>'
+      : `<span class="rsvp n">Не будет</span>${r.c ? `<details class="rsvp-why"><summary>Причина</summary><p>${esc(r.c)}</p></details>` : ''}`; };
     const st = L.body.scrollTop;
     L.body.innerHTML = `<div class="evh"><span class="pill num">${I.cal.replace('class="i"', 'class="i" style="width:14px;height:14px"')}${DOW_L[dowOf(s.date)]}, ${fmtD(s.date)}${s.time ? ', ' + esc(s.time) : ''}</span><span class="pill acc num">Присутствует ${p} из ${members.length}</span>${ry + rn ? `<span class="pill num" title="Ответы участников в Telegram и MAX">Будут ${ry} · не будут ${rn}</span>` : ''}</div>
       ${s.topic ? `<p style="margin:0 0 12px"><span class="muted">Тема:</span> ${esc(s.topic)}</p>` : ''}
       ${S.canWrite ? `<div class="row2" style="margin-bottom:10px"><button class="btn" data-all="p">Все присутствуют</button><button class="btn ghost" data-all="">Очистить отметки</button></div>` : ''}
-      ${members.length ? `<div class="mlist">${members.map(m => { const v = markOf(s, m.id); return `<div class="mrow"><div class="nm"><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, m.rank].filter(Boolean).join(' · '))}</small>${rTag(m)}</div>
+      ${members.length ? `<div class="mlist">${members.map(m => { const v = markOf(s, m.id); return `<div class="mrow${rCls(m)}"><div class="nm"><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, m.rank].filter(Boolean).join(' · '))}</small>${rTag(m)}</div>
         <div class="seg" role="group" aria-label="${esc(m.fio)}">${['p', 'a', 'e'].map(k => `<button data-st="${k}" data-m="${m.id}" aria-pressed="${v === k}" title="${ST_L[k]}" ${dis}>${SYM[k]}</button>`).join('')}</div></div>`; }).join('')}</div>`
       : '<p class="hint">В коллективе пока нет участников.</p>'}`;
     L.body.scrollTop = st;
