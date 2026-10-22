@@ -828,6 +828,8 @@ button.fi:active{transform:scale(.995)}
 .chip.hot svg{fill:#FFD25E;stroke:#FFD25E}
 .fn.pin{background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(135deg,var(--fire1),var(--fire2),var(--fire3)) border-box}
 .fd-end span svg{color:var(--fire2)}
+.fd-fb{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 16px 22px;text-align:center}
+.fd-fb small{color:var(--muted);font-size:12.5px;max-width:340px;line-height:1.4}
 /* коллективы: переключатель и место */
 .seg{display:inline-flex;gap:3px;padding:3px;margin:0 0 12px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);max-width:100%;overflow-x:auto}
 .seg button{border:0;background:none;padding:7px 12px;border-radius:8px;font-size:14px;font-weight:500;color:var(--muted);white-space:nowrap}
@@ -3417,6 +3419,7 @@ function renderFeed() {
   });
   if (items.length > S.feedN) html += '<div class="fd-load" aria-hidden="true"><i></i><i></i><i></i></div><button class="btn fd-more" type="button" data-more>Показать ещё</button>';
   else if (items.length > 3) html += `<div class="fd-end"><span>${I.check}</span>Вы посмотрели всю ленту</div>`;
+  if (me && hasApi()) html += `<div class="fd-fb"><button class="btn" type="button" data-fb>${I.chat}<span>Обратная связь</span></button><small>Вопрос, идея или ошибка в приложении: напишите, и сообщение придёт администратору.</small></div>`;
   const first = !el.dataset.seen;
   el.innerHTML = html;
   if (!first) el.classList.add('seen'); else el.dataset.seen = '1';
@@ -3485,6 +3488,7 @@ async function feedHydrate(root) {
 function feedAct(t) {
   if (t.closest('[data-more]')) { S.feedN += 12; renderFeed(); return true; }
   if (t.closest('[data-nadd]')) { newsSheet(null); return true; }
+  if (t.closest('[data-fb]')) { feedbackSheet(); return true; }
   const ne = t.closest('[data-nedit]'); if (ne) { newsSheet(ne.dataset.nedit); return true; }
   const nm = t.closest('[data-nmore]'); if (nm) { const c = nm.closest('.fi'); c.classList.toggle('open'); nm.textContent = c.classList.contains('open') ? 'Свернуть' : 'Читать дальше'; return true; }
   const ga = t.closest('[data-galgo]');
@@ -3510,6 +3514,7 @@ $('#tMode').addEventListener('click', e => {
 
 /* ---------- Новости в ленте: пишут руководители и администратор ---------- */
 Object.assign(I, {
+  chat: '<svg class="i" viewBox="0 0 24 24"><path d="M5 5h14a1.5 1.5 0 011.5 1.5v9A1.5 1.5 0 0119 17h-7l-4.5 3.5V17H5a1.5 1.5 0 01-1.5-1.5v-9A1.5 1.5 0 015 5zM8 10h8M8 13h5"/></svg>',
   news: '<svg class="i" viewBox="0 0 24 24"><path d="M4 9.5v5a1 1 0 001 1h2l5 4V4.5l-5 4H5a1 1 0 00-1 1zM16 8.5a5 5 0 010 7M18.5 6a8.5 8.5 0 010 12"/></svg>',
   pin: '<svg class="i" viewBox="0 0 24 24"><path d="M9 4h6l-1 5 3 3v2H7v-2l3-3zM12 14v6"/></svg>',
   dots: '<svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18.5" cy="12" r="1.3"/></svg>',
@@ -3534,6 +3539,23 @@ function feedNews(n, ts, pinned) {
     ${ph.length ? mosaic(ph, own.length ? 'n:' + n.id : e.id) : ''}
     <div class="fi-b">${n.title ? `<h3>${esc(n.title)}</h3>` : ''}${n.text ? `<div class="nt${long ? ' clamp' : ''}">${newsBody(n.text)}</div>${long ? '<button class="nmore" type="button" data-nmore>Читать дальше</button>' : ''}` : ''}
     ${e ? `<button class="nev" type="button" data-ev="${esc(e.id)}"><span class="ic">${I.cup}</span><span style="min-width:0;flex:1"><b>${esc(e.title)}</b><small>${esc([e.level, e.date && fmtD(e.date), (e.participants || []).length ? (e.participants || []).length + ' ' + plural((e.participants || []).length, 'участник', 'участника', 'участников') : ''].filter(Boolean).join(' · '))}</small></span>${I.right}</button>` : ''}</div></article>`;
+}
+/* Обратная связь: сообщение уходит администратору в Telegram или MAX и сохраняется в листе «Обратная связь». */
+function feedbackSheet() {
+  if (!Auth.me || !hasApi()) { toast('Войдите, чтобы написать'); return; }
+  const L = openSheet({ title: 'Обратная связь' });
+  L.body.innerHTML = `<label class="lbl" for="fbX">Сообщение</label><textarea class="fld" id="fbX" rows="6" maxlength="2000" placeholder="Что понравилось, что неудобно, что добавить"></textarea>
+    <div class="hint">Придёт администратору в Telegram или MAX вместе с вашим именем.</div><div id="fbErr"></div>`;
+  L.foot.innerHTML = '<span class="sp"></span><button class="btn" data-close>Отмена</button><button class="btn pri" data-ok>Отправить</button>';
+  const ta = $('#fbX', L.body), err = m => { $('#fbErr', L.body).innerHTML = m ? `<div class="err">${I.alert}<span>${esc(m)}</span></div>` : ''; };
+  setTimeout(() => ta.focus(), 250);
+  $('[data-ok]', L.foot).onclick = async () => {
+    const b = $('[data-ok]', L.foot), v = String(ta.value || '').trim();
+    if (v.length < 3) { err('Напишите сообщение.'); ta.focus(); return; }
+    err(''); b.disabled = true; b.textContent = 'Отправляем…';
+    try { await gcall('feedback', Store.token, v); closeSheet(L); toast('Спасибо! Сообщение отправлено'); }
+    catch (e) { err(dbErr(e)); b.disabled = false; b.textContent = 'Отправить'; }
+  };
 }
 function newsSheet(id) {
   if (!S.canWrite || !S.db) { toast('Новости публикуют руководители и администратор'); return; }
