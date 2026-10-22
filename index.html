@@ -427,6 +427,10 @@ table.mx{border-collapse:collapse;font-size:14px}
 .pick label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .pick input{width:20px;height:20px;accent-color:var(--accent);flex:none}
 .pick small{display:block;color:var(--muted);font-size:12.5px}
+/* поиск в мастере рапорта: остаётся вверху окна, список листается вместе с окном */
+.search.stick{display:block;position:sticky;top:-18px;z-index:3;background:var(--surface);margin:0 -20px;padding:8px 20px;box-shadow:0 1px 0 var(--line)}
+.search.stick svg{left:32px}
+#rPick{max-height:none;overflow:visible}
 .row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .row2 .fld{flex:1 1 140px}
 @media (max-width:760px){.att-sum{flex:1 1 100%}#attTeam{width:100%}.vh .acts:has(#attTeam){flex:1 1 100%}}
@@ -3030,7 +3034,7 @@ function openReport(preset = {}) {
             <div class="rb-h"><b>${esc(title)}</b></div>
             ${ms.map(m => `<label class="rb-p" data-s="${esc(norm(m.fio + ' ' + m.group))}"><input type="checkbox" value="${pkey(tid, m.id)}" ${sel.has(pkey(tid, m.id)) ? 'checked' : ''}><span><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, teamsLabel(m)].filter(Boolean).join(' · '))}</small></span></label>`).join('')}</section>`;
         const ev = d.eventId && S.events.find(e => e.id === d.eventId);
-        return `<label class="search" style="display:block">${I.search}<input id="rQ" type="search" placeholder="Поиск по ФИО или группе" value="${esc(d.q)}" autocomplete="off"></label>
+        return `<label class="search stick">${I.search}<input id="rQ" type="search" placeholder="Поиск по ФИО или группе" value="${esc(d.q)}" autocomplete="off"></label>
           <div class="sug">${ev ? `<button class="chip" data-pev>Участники «${esc(ev.title)}»</button>` : ''}${d.people.length ? '<button class="chip ghost" data-pclr>Снять всех</button>' : ''}</div>
           <div class="sug" id="rAll">${groups.map(g => `<button class="chip" type="button" data-all="${g.tid}" aria-pressed="${g.ms.every(m => sel.has(pkey(g.tid, m.id)))}">${esc(g.title)}</button>`).join('')}</div>
           <div class="hint" id="rCnt">Выбрано: ${sel.size}. Нажмите название коллектива, чтобы выбрать всех его участников, затем снимите галочки у тех, кого не нужно указывать.</div>
