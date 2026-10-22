@@ -284,6 +284,20 @@ table.t{width:100%;border-collapse:collapse}
 .bd div{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px}
 .bd div:last-child{border-bottom:0}
 .bd span{min-width:0;overflow-wrap:anywhere}
+.bd .adj{background:color-mix(in srgb,var(--good) 7%,transparent)}
+.bd .adj.neg{background:var(--danger-soft)}
+.bd .adj b{color:var(--good)}
+.bd .adj.neg b{color:var(--danger)}
+.bd .adj-v{display:flex;align-items:center;gap:4px;flex:none}
+.bd .adj-v .ib{width:32px;height:32px;min-width:32px}
+.adj-b{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
+.adj-b .btn{flex:1 1 140px;justify-content:center}
+.seg.adj-s{display:flex;margin:4px 0 2px}
+.adj-s button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.adj-s button[aria-pressed="true"][data-sg="1"]{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.adj-s button[aria-pressed="true"][data-sg="-1"]{background:var(--danger-soft);color:var(--danger)}
+.rate .adj-q{margin-left:6px;width:28px;height:28px;min-width:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-weight:700;font-size:15px;line-height:1;vertical-align:middle;cursor:pointer}
+.rate .adj-q:hover{color:var(--accent);border-color:var(--accent)}
 .big{display:flex;align-items:baseline;gap:8px;padding:12px 14px;border-radius:10px;background:var(--accent-soft);margin-bottom:6px}
 .big b{font:700 26px var(--f-display);color:var(--accent)}
 
@@ -894,8 +908,200 @@ button.fi:active{transform:scale(.995)}
 .vs-r.never b{color:var(--muted)}
 .vs-d{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 4px 46px}
 .vs-d span{font-size:12.5px;padding:3px 8px;border-radius:8px;background:var(--surface-2);color:var(--muted)}
+/* ---- пожарный дизайн v2: огненный акцент, баннеры разделов с инфографикой, машина, каска, гидрант, щит, огнетушитель, искры ---- */
+:root{--fire1:#FFC23D;--fire2:#F26522;--fire3:#D7261E;--fire4:#8F1712;--navy:#1E2633;--accent:#C0331B;--accent-soft:#FDEBE5;--fire-btn:linear-gradient(135deg,#CC3A17,#A81F14)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#FF8A5B;--accent-ink:#1F0B04;--accent-soft:#3B2018}}
+:root[data-theme="dark"]{--accent:#FF8A5B;--accent-ink:#1F0B04;--accent-soft:#3B2018}
+body{background:radial-gradient(900px 420px at 92% -120px,color-mix(in srgb,var(--fire2) 13%,transparent),transparent 70%),radial-gradient(700px 360px at -10% -140px,color-mix(in srgb,#3D7BD9 9%,transparent),transparent 70%),var(--bg);background-repeat:no-repeat}
+/* шапка: бегущая огненная линия */
+.top{border-bottom:0}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:3px;background:linear-gradient(90deg,var(--fire1),var(--fire2),var(--fire3),var(--fire2),var(--fire1));background-size:200% 100%}
+.tab{position:relative}
+.tab[aria-selected="true"]::after{content:"";position:absolute;left:14px;right:14px;bottom:2px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--fire1),var(--fire2),var(--fire3))}
+@media (max-width:760px){
+  .bnav button{position:relative}
+  .bnav button[aria-selected="true"]::before{content:"";position:absolute;top:0;left:50%;width:22px;height:3px;margin-left:-11px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--fire1),var(--fire2),var(--fire3));box-shadow:0 2px 10px rgba(242,101,34,.7)}
+}
+/* кнопки и мелочи в огненных цветах */
+.btn.pri{background:var(--fire-btn);border-color:transparent;color:#fff;box-shadow:0 2px 10px -2px rgba(192,51,27,.55);position:relative;overflow:hidden}
+.btn.pri:hover{background:linear-gradient(135deg,#B9300F,#951B10);border-color:transparent}
+.btn.pri::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-120%);pointer-events:none}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){.btn.pri:hover::after{transition:transform .6s ease;transform:translateX(120%)}}
+.medal.m1{background:linear-gradient(160deg,#FFE08A,#E3A82B);color:#3A2600;border-color:transparent;box-shadow:0 0 0 2px color-mix(in srgb,#FFC23D 30%,transparent)}
+.medal.m2{background:linear-gradient(160deg,#EEF2F7,#AEB8C6);color:#2A3340;border-color:transparent}
+.medal.m3{background:linear-gradient(160deg,#F2C29E,#C47A45);color:#3A1C06;border-color:transparent}
+.empty .eic{background:linear-gradient(160deg,var(--fire1),var(--fire2) 55%,var(--fire3));color:#fff;box-shadow:0 8px 22px -8px rgba(215,38,30,.7)}
+.sh-h{position:relative}
+.sh-h::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--fire1),var(--fire2),var(--fire3))}
+.ev{position:relative;overflow:hidden}
+.ev .dt{background:linear-gradient(170deg,color-mix(in srgb,var(--fire2) 16%,var(--surface-2)),var(--surface-2) 70%)}
+@media (hover:hover){.ev:hover,.card.tm:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(19,26,36,.06),0 16px 36px -8px rgba(192,51,27,.28)}}
+.card.tm{transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
+/* уровень мероприятия огоньками */
+.lvf{display:inline-flex;gap:1px;vertical-align:middle}
+.lvf svg{width:14px;height:14px;fill:var(--line);stroke:none}
+.lvf svg.on{fill:var(--fire2)}
+.lvf svg.on:nth-child(n+4){fill:var(--fire3)}
+/* «температура» рейтинга: полоска рядом с баллами */
+.heat{display:inline-block;width:56px;height:6px;border-radius:6px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;flex:none}
+.heat>i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--fire1),var(--fire2),var(--fire3))}
+.heat.wide{display:block;width:auto;height:8px}
+@media (max-width:760px){.rate .heat{width:40px}}
+/* подвал */
+#buildTag{position:relative;padding-top:18px!important}
+#buildTag::before{content:"";display:block;width:140px;height:5px;margin:0 auto 10px;border-radius:5px;background:repeating-linear-gradient(135deg,var(--fire3) 0 8px,#F2EFE8 8px 16px);opacity:.8}
+
+/* ---- баннер раздела ---- */
+.fb{position:relative;isolation:isolate;overflow:hidden;border-radius:24px;margin:0 0 14px;padding:20px 22px 26px;color:#F4F1EC;
+  background:radial-gradient(70% 95% at 100% 100%,rgba(242,101,34,.5),transparent 62%),radial-gradient(50% 60% at 0% 0%,rgba(61,123,217,.2),transparent 60%),linear-gradient(160deg,#1E2633 0%,#141019 100%);
+  box-shadow:0 1px 2px rgba(19,26,36,.1),0 14px 34px -12px rgba(120,24,12,.45);
+  display:grid;grid-template-columns:minmax(0,1fr) 210px;grid-template-areas:"t art" "k art" "g g";column-gap:18px;align-items:start}
+.fb.nog{grid-template-areas:"t art" "k art"}
+.fb-t{grid-area:t;min-width:0}
+.fb-t h1{font:700 24px/1.2 var(--f-display);margin:0;letter-spacing:-.01em;color:#fff;text-wrap:balance}
+.fb-t p{margin:6px 0 0;color:rgba(244,241,236,.74);font-size:13.5px}
+.fb-t .fb-d{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:12.5px;font-weight:500;color:rgba(244,241,236,.85)}
+.fb-t .fb-d::before{content:"";width:6px;height:6px;border-radius:50%;background:#55C78C;box-shadow:0 0 0 3px rgba(85,199,140,.22)}
+.fb-k{grid-area:k;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px}
+.fb-k div{min-width:0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.fb-k b{display:block;font:700 22px/1.1 var(--f-display);font-variant-numeric:tabular-nums;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fb-k div.hot b{background:linear-gradient(180deg,#FFE3A1,#FFB13D 55%,#F26522);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fb-k span{display:block;margin-top:3px;font-size:12px;color:rgba(244,241,236,.7);line-height:1.25;overflow-wrap:anywhere}
+.fb-g{grid-area:g;min-width:0;margin-top:14px;padding-top:12px;border-top:1px dashed rgba(255,255,255,.14)}
+.fb-g:empty{display:none}
+.fg-h{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(244,241,236,.62);margin:0 0 8px}
+.fb-art{grid-area:art;align-self:end;justify-self:end;width:210px;height:150px;position:relative;z-index:1;pointer-events:none}
+.fb-art svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.fb-st{position:absolute;left:0;right:0;bottom:0;height:7px;z-index:2;background:repeating-linear-gradient(135deg,var(--fire3) 0 12px,#F2EFE8 12px 24px);opacity:.92}
+.fb>*:not(.fb-fx):not(.fb-st){position:relative;z-index:1}
+/* искры и жар */
+.fb-fx{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.fb-glow{position:absolute;right:-60px;bottom:-90px;width:320px;height:240px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,138,61,.55),rgba(215,38,30,.25) 55%,transparent)}
+.emb i{position:absolute;bottom:-8px;width:5px;height:5px;border-radius:50%;background:#FFC23D;box-shadow:0 0 6px 2px rgba(255,140,40,.8);opacity:0}
+.emb i:nth-child(1){left:52%;--dx:-18px}.emb i:nth-child(2){left:60%;--dx:14px;width:4px;height:4px}.emb i:nth-child(3){left:68%;--dx:-10px}
+.emb i:nth-child(4){left:74%;--dx:22px;width:3px;height:3px}.emb i:nth-child(5){left:80%;--dx:-24px}.emb i:nth-child(6){left:86%;--dx:12px;width:4px;height:4px}
+.emb i:nth-child(7){left:91%;--dx:-8px}.emb i:nth-child(8){left:96%;--dx:-20px;width:3px;height:3px}.emb i:nth-child(9){left:40%;--dx:16px;width:3px;height:3px}
+.emb i:nth-child(10){left:30%;--dx:-12px;width:3px;height:3px}.emb i:nth-child(11){left:63%;--dx:26px;width:3px;height:3px}.emb i:nth-child(12){left:83%;--dx:-30px;width:3px;height:3px}
+@media (prefers-reduced-motion:no-preference){
+  .top::after{animation:fireRun 6s linear infinite}
+  .emb i{animation:ember 4.2s linear infinite}
+  .emb i:nth-child(2){animation-delay:.6s;animation-duration:3.6s}.emb i:nth-child(3){animation-delay:1.3s}.emb i:nth-child(4){animation-delay:2s;animation-duration:5s}
+  .emb i:nth-child(5){animation-delay:.3s;animation-duration:3.8s}.emb i:nth-child(6){animation-delay:2.6s}.emb i:nth-child(7){animation-delay:1.7s;animation-duration:4.6s}
+  .emb i:nth-child(8){animation-delay:3.1s}.emb i:nth-child(9){animation-delay:2.2s;animation-duration:5.4s}.emb i:nth-child(10){animation-delay:3.6s;animation-duration:5.8s}
+  .emb i:nth-child(11){animation-delay:.9s;animation-duration:4.8s}.emb i:nth-child(12){animation-delay:3.3s;animation-duration:3.9s}
+  .fb-glow{animation:glow 3.4s ease-in-out infinite}
+  .fb.off *,.lg-fx.off *{animation-play-state:paused!important}
+}
+@keyframes fireRun{to{background-position:-200% 0}}
+@keyframes ember{0%{transform:translate(0,0) scale(1);opacity:0}10%{opacity:1}70%{opacity:.8}100%{transform:translate(var(--dx),-170px) scale(.3);opacity:0}}
+@keyframes glow{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+/* инфографика */
+.sbar{display:flex;height:12px;border-radius:12px;overflow:hidden;gap:2px;background:rgba(255,255,255,.08)}
+.sbar i{display:block;background:var(--c);min-width:3px;transform-origin:left}
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12.5px;color:rgba(244,241,236,.82)}
+.lg span{display:inline-flex;align-items:center;gap:6px;min-width:0}
+.lg span i{width:9px;height:9px;border-radius:3px;background:var(--c);flex:none}
+.lg b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums}
+.lvb{display:grid;grid-template-columns:minmax(0,max-content) 1fr auto;gap:6px 10px;align-items:center;font-size:12.5px;color:rgba(244,241,236,.82)}
+.lvb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lvb em{display:block;height:8px;border-radius:8px;background:rgba(255,255,255,.08);overflow:hidden}
+.lvb em i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--fire1),var(--fire2),var(--fire3));transform-origin:left}
+.lvb b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.ati{display:flex;align-items:center;gap:16px}
+.ring{position:relative;width:64px;height:64px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:5}
+.ring .rb{stroke:rgba(255,255,255,.12)}
+.ring .rf{stroke:url(#fbRg);stroke-linecap:round}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:700 15px/1 var(--f-display);color:#fff}
+.spk{flex:1;min-width:0;display:flex;align-items:flex-end;gap:4px;height:56px}
+.spk i{flex:1;max-width:26px;min-height:3px;border-radius:5px 5px 2px 2px;background:linear-gradient(180deg,var(--fire1),var(--fire2) 60%,var(--fire3));transform-origin:bottom}
+.spk i.lo{background:linear-gradient(180deg,#FF8A7A,#B42318)}
+.spk-c{display:flex;justify-content:space-between;font-size:11.5px;color:rgba(244,241,236,.6);margin-top:4px}
+.pdm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;max-width:460px}
+.pdm div{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;text-align:center}
+.pdm small{font-size:12px;color:rgba(244,241,236,.85);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pdm em{display:grid;place-items:start center;width:100%;border-radius:10px 10px 4px 4px;padding-top:6px;font:700 13px/1 var(--f-display);font-style:normal;color:#2A1A00;transform-origin:bottom}
+.pdm .p1 em{background:linear-gradient(180deg,#FFE08A,#E3A82B)}.pdm .p2 em{background:linear-gradient(180deg,#EEF2F7,#AEB8C6)}.pdm .p3 em{background:linear-gradient(180deg,#F2C29E,#C47A45)}
+@media (prefers-reduced-motion:no-preference){
+  .sbar i,.lvb em i{animation:growX .9s cubic-bezier(.2,.8,.2,1) both}
+  .spk i,.pdm em{animation:growY .8s cubic-bezier(.2,.8,.2,1) both}
+  .spk i:nth-child(2n){animation-delay:.05s}.spk i:nth-child(3n){animation-delay:.1s}
+  .pdm div:nth-child(1) em{animation-delay:.1s}.pdm div:nth-child(3) em{animation-delay:.2s}
+  .ring .rf{animation:ringIn 1.1s cubic-bezier(.2,.8,.2,1) both}
+  .heat>i{animation:growX .9s cubic-bezier(.2,.8,.2,1) both}
+}
+@keyframes growX{from{transform:scaleX(0)}}
+@keyframes growY{from{transform:scaleY(0)}}
+@keyframes ringIn{from{stroke-dasharray:0 100}}
+.heat>i{transform-origin:left}
+/* картинки */
+.art .whl{transform-box:fill-box;transform-origin:center}
+.art .bcn{transform-box:fill-box}
+@media (prefers-reduced-motion:no-preference){
+  .truck .tr-all{animation:drive 1.8s cubic-bezier(.22,.9,.3,1) .15s both}
+  .truck .whl{animation:spin .45s linear 4 .15s}
+  .truck .road{animation:road .5s linear 4 .15s}
+  .truck .tr-b{animation:bob 1.6s ease-in-out 2s infinite}
+  .truck .bcn.b1,.truck .bg1{animation:blink 1s steps(1) infinite}
+  .truck .bcn.b2,.truck .bg2{animation:blink 1s steps(1) .5s infinite}
+  .helm .hs{animation:sweep 3.6s ease-in-out 1s infinite}
+  .helm .hl{animation:bob 3s ease-in-out infinite}
+  .hydr .dr{animation:drip 1.6s cubic-bezier(.5,0,.8,.6) infinite}
+  .hydr .dr:nth-child(2){animation-delay:.4s}.hydr .dr:nth-child(3){animation-delay:.8s}.hydr .dr:nth-child(4){animation-delay:1.2s}
+  .shld .fl{transform-box:fill-box;transform-origin:50% 100%;animation:flk 2.4s ease-in-out infinite}
+  .shld .glw{transform-box:fill-box;transform-origin:center;animation:glow 2.8s ease-in-out infinite}
+  .ext .ndl{transform-box:fill-box;transform-origin:0 100%;animation:needle 2.6s ease-in-out infinite}
+  .ext .pf circle{transform-box:fill-box;transform-origin:center;animation:puff 2.4s ease-out infinite}
+  .ext .pf circle:nth-child(2){animation-delay:.6s}.ext .pf circle:nth-child(3){animation-delay:1.2s}.ext .pf circle:nth-child(4){animation-delay:1.8s}
+}
+@keyframes drive{from{transform:translateX(-260px)}to{transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes road{to{stroke-dashoffset:-24}}
+@keyframes bob{0%,100%{transform:none}50%{transform:translateY(-1.5px)}}
+@keyframes blink{0%{opacity:1}50%{opacity:.18}}
+@keyframes sweep{0%{transform:translateX(0)}45%,100%{transform:translateX(160px)}}
+@keyframes drip{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(16px,46px);opacity:0}}
+@keyframes needle{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(25deg)}}
+@keyframes puff{0%{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:.85}100%{transform:translate(-26px,18px) scale(1.6);opacity:0}}
+/* лента: шапка-приветствие уходит в баннер, кнопка «Новость» остаётся */
+#v-feed .fd-hi>div:first-child{display:none}
+#v-feed .fd-hi:not(:has(button)){display:none}
+#v-feed .fd-hi{justify-content:flex-end;margin-top:-4px}
+/* разделы: заголовок в баннере, под ним действия */
+.view>.vh{justify-content:flex-end}
+.view>.vh:has(>.acts:empty){display:none}
+/* вход: ночь, пламя, искры */
+.login{background:radial-gradient(120% 60% at 50% 115%,rgba(242,101,34,.55),transparent 60%),radial-gradient(60% 50% at 10% 0%,rgba(61,123,217,.25),transparent 60%),linear-gradient(170deg,#1E2633,#0F0C12);isolation:isolate}
+.login .card{position:relative;z-index:1;overflow:hidden;box-shadow:0 30px 70px -20px rgba(0,0,0,.6)}
+.login .card::before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:repeating-linear-gradient(135deg,var(--fire3) 0 12px,#F2EFE8 12px 24px)}
+.lg-fx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.lg-fx .emb i{bottom:60px}
+.lg-fx .emb i:nth-child(n){left:calc(var(--x,50) * 1%)}
+.lg-fx .emb i:nth-child(1){--x:12}.lg-fx .emb i:nth-child(2){--x:22}.lg-fx .emb i:nth-child(3){--x:33}.lg-fx .emb i:nth-child(4){--x:41}.lg-fx .emb i:nth-child(5){--x:50}.lg-fx .emb i:nth-child(6){--x:58}
+.lg-fx .emb i:nth-child(7){--x:66}.lg-fx .emb i:nth-child(8){--x:74}.lg-fx .emb i:nth-child(9){--x:82}.lg-fx .emb i:nth-child(10){--x:90}.lg-fx .emb i:nth-child(11){--x:6}.lg-fx .emb i:nth-child(12){--x:96}
+.lg-fl{position:absolute;left:-5%;right:-5%;bottom:-10px;height:140px;display:flex;align-items:flex-end;justify-content:space-between;opacity:.55;filter:blur(1px)}
+.lg-fl svg{width:9%;min-width:60px;height:100%;fill:url(#fbFg);stroke:none;transform-origin:50% 100%}
+@media (prefers-reduced-motion:no-preference){
+  .lg-fx .emb i{animation-duration:6s}
+  .lg-fl svg{animation:flk 2.6s ease-in-out infinite}
+  .lg-fl svg:nth-child(2n){animation-duration:3.2s;animation-delay:.4s}.lg-fl svg:nth-child(3n){animation-duration:2.2s;animation-delay:.9s}
+}
+@keyframes ember2{0%{transform:translate(0,0) scale(1);opacity:0}10%{opacity:1}75%{opacity:.7}100%{transform:translate(var(--dx),-80vh) scale(.3);opacity:0}}
+@media (prefers-reduced-motion:no-preference){.lg-fx .emb i{animation-name:ember2}}
+/* телефон */
+@media (max-width:760px){
+  .fb{grid-template-columns:minmax(0,1fr) 96px;grid-template-areas:"t art" "k k" "g g";padding:16px 16px 22px;border-radius:20px;column-gap:10px}
+  .fb.nog{grid-template-areas:"t art" "k k"}
+  .fb-t h1{font-size:20px}
+  .fb-art{width:96px;height:72px;align-self:start;margin-top:-2px}
+  .fb-k{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:12px}
+  .fb-k b{font-size:19px}
+  .fb-glow{width:220px;height:200px;right:-70px;bottom:auto;top:-80px}
+}
+@media (min-width:761px) and (max-width:980px){.fb-k{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
-</head>
+
 <body>
 <header class="top">
   <div class="top-in">
@@ -1009,7 +1215,7 @@ button.fi:active{transform:scale(.995)}
   </section>
 </main>
 
-<div id="buildTag" class="hint" style="text-align:center;padding:10px 16px 0">Сборка: 2026-10-11 (лента, фото в новостях, пожарная тема)</div>
+<div id="buildTag" class="hint" style="text-align:center;padding:10px 16px 0">Сборка: 2026-10-22 (пожарный дизайн: баннеры разделов, анимация, инфографика)</div>
 <nav class="bnav" aria-label="Разделы">
   <button data-v="feed" aria-selected="true"><svg class="i" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V19a1.5 1.5 0 01-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 014 19z"/></svg>Лента</button>
   <button data-v="members" aria-selected="false"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/></svg>Участники</button>
@@ -1028,6 +1234,7 @@ const I = {
   x:'<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   trash:'<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
   plus:'<svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  minus:'<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
   alert:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>',
   users:'<svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 010 6.8M18 14.8c1.9.7 3.1 2.4 3.5 5.2"/></svg>',
   cal:'<svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
@@ -1055,7 +1262,7 @@ const DEF_RULES = {
 };
 const DEF_LEVEL = ['Внутреннее', 'Городское', 'Региональное', 'Всероссийское', 'Международное'];
 
-const S = { db: null, canWrite: true, canEv: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false },
+const S = { db: null, canWrite: true, canEv: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], adjust: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false, j: false },
   view: 'feed', feedN: 12, teamMode: 'sum', sort: { key: 'rating', dir: 'desc' }, q: '', team: '', eq: '', ratings: new Map(), places: new Map() };
 
 /* ---------- toast ---------- */
@@ -1125,6 +1332,8 @@ function computeRatings() {
     const r = map.get(p.memberId); if (!r) continue;
     const pts = ptsFor(ev.rules, p); r.total += pts; r.items.push({ ev, p, pts });
   }
+  /* баллы, добавленные или снятые вручную */
+  for (const a of S.adjust) { const r = map.get(a.memberId), pts = Number(a.points) || 0; if (r && pts) { r.total = r2(r.total + pts); r.items.push({ adj: a, pts }); } }
   S.ratings = map;
   const order = [...S.members].sort((a, b) => (map.get(b.id).total - map.get(a.id).total));
   S.places = new Map();
@@ -1401,16 +1610,69 @@ function openMember(id) {
     if (ev.target.closest('[data-del]')) { if (await deleteMember(id)) closeSheet(L); }
   });
   L.body.addEventListener('click', ev => {
+    const aj = ev.target.closest('[data-adj]'); if (aj) { adjustSheet(id, Number(aj.dataset.adj)); return; }
+    const ad = ev.target.closest('[data-adjdel]'); if (ad) { deleteAdjust(ad.dataset.adjdel); return; }
     const b = ev.target.closest('[data-tm]'); if (!b || !editing) return;
     const t = b.dataset.tm; selT.has(t) ? selT.delete(t) : selT.add(t); b.setAttribute('aria-pressed', selT.has(t));
   });
   L.refresh = draw; draw();
 }
+/* История рейтинга: баллы за мероприятия и баллы, добавленные или снятые вручную, — по дате, новые сверху. */
+const rateDay = x => x.adj ? ymdOf(Number(x.adj.createdAt) || 0) : String(x.ev.date || '');
+const rateAt = x => x.adj ? Number(x.adj.createdAt) || 0 : partAt(x.ev, x.p);
 function rateHtml(r, id) {
-  const pl = S.places.get(id);
-  const items = r.items.slice().sort((a, b) => String(b.ev.date).localeCompare(String(a.ev.date)));
-  return `<div class="big"><b class="num">${fmtN(r.total)}</b><span class="muted">${plural(Math.round(r.total), 'балл', 'балла', 'баллов')}${pl ? ` · ${pl}-е место в общем рейтинге` : ''}</span></div>
-    ${items.length ? `<div class="bd">${items.map(x => `<div><span>${esc(x.ev.title)}<br><small class="muted">${fmtD(x.ev.date)} · ${esc(x.p.category)}${x.p.place ? ' · ' + esc(x.p.place) : ''}</small></span><b class="num">+${fmtN(x.pts)}</b></div>`).join('')}</div>` : '<div class="hint">Баллы появятся, когда участника добавят в мероприятие.</div>'}`;
+  const pl = S.places.get(id), m = S.members.find(x => x.id === id), can = canAdjust(m);
+  const items = r.items.slice().sort((a, b) => rateDay(b).localeCompare(rateDay(a)) || rateAt(b) - rateAt(a));
+  const row = x => x.adj
+    ? `<div class="adj${x.pts < 0 ? ' neg' : ''}"><span>${esc(x.adj.reason)}<br><small class="muted">${fmtD(rateDay(x))} · ${x.pts < 0 ? 'снято' : 'добавлено'} вручную${x.adj.author ? ' · ' + esc(x.adj.author) : ''}</small></span><span class="adj-v"><b class="num">${x.pts > 0 ? '+' : '−'}${fmtN(Math.abs(x.pts))}</b>${canDelAdj(x.adj) ? `<button class="ib" type="button" data-adjdel="${esc(x.adj.id)}" aria-label="Удалить запись" title="Удалить запись">${I.trash}</button>` : ''}</span></div>`
+    : `<div><span>${esc(x.ev.title)}<br><small class="muted">${fmtD(x.ev.date)} · ${esc(x.p.category)}${x.p.place ? ' · ' + esc(x.p.place) : ''}</small></span><b class="num">+${fmtN(x.pts)}</b></div>`;
+  return `<div class="big"><b class="num">${fmtN(r.total)}</b><span class="muted">${plural(Math.round(Math.abs(r.total)), 'балл', 'балла', 'баллов')}${pl ? ` · ${pl}-е место в общем рейтинге` : ''}</span></div>
+    ${can ? `<div class="adj-b"><button class="btn" type="button" data-adj="1">${I.plus}Добавить баллы</button><button class="btn dng" type="button" data-adj="-1">${I.minus}Снять баллы</button></div>` : ''}
+    ${items.length ? `<div class="bd">${items.map(row).join('')}</div>` : '<div class="hint">Баллы появятся, когда участника добавят в мероприятие' + (can ? ' или добавят баллы кнопкой выше' : '') + '.</div>'}`;
+}
+/* Менять баллы вручную может администратор (любому) и руководитель (участникам своих коллективов). */
+const canAdjust = m => { const me = Auth.me; if (!m || !me || !S.db) return false; if (me.role === 'admin') return true; return me.role === 'leader' && mTeams(m).some(tid => canTasks(S.teams.find(t => t.id === tid))); };
+const canDelAdj = a => { const me = Auth.me; return !!me && !!S.db && (me.role === 'admin' || (!!a.authorId && a.authorId === me.id)); };
+function adjustSheet(mid, sign) {
+  const m = S.members.find(x => x.id === mid);
+  if (!canAdjust(m)) { toast('Менять баллы может руководитель коллектива участника или администратор'); return; }
+  const L = openSheet({ title: 'Рейтинг: ' + shortFio(m.fio) });
+  const r = S.ratings.get(mid) || { total: 0 };
+  L.body.innerHTML = `<div class="hint" style="margin-top:0">Сейчас ${fmtN(r.total)} ${plural(Math.round(Math.abs(r.total)), 'балл', 'балла', 'баллов')}.</div>
+    <div class="seg adj-s" role="group" aria-label="Добавить или снять"><button type="button" data-sg="1">${I.plus}Добавить</button><button type="button" data-sg="-1">${I.minus}Снять</button></div>
+    <label class="lbl" for="aPts">Сколько баллов</label>
+    <input class="fld num" id="aPts" type="number" inputmode="decimal" min="0.5" max="1000" step="0.5" placeholder="Например, 5">
+    <label class="lbl" for="aWhy">За что</label><textarea class="fld" id="aWhy" rows="3" maxlength="500"></textarea>
+    <div class="hint">Запись появится в истории рейтинга участника: кто, когда, сколько и за что.</div><div id="aErr"></div>`;
+  L.foot.innerHTML = `<button class="btn" data-close>Отмена</button><button class="btn" data-ok></button>`;
+  const setSign = v => {
+    sign = v > 0 ? 1 : -1;
+    $$('[data-sg]', L.body).forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.sg) === sign)));
+    $('#aWhy', L.body).placeholder = sign > 0 ? 'Например, помощь в подготовке концерта' : 'Например, пропуск репетиции без причины';
+    const ok = $('[data-ok]', L.foot); ok.className = 'btn ' + (sign > 0 ? 'pri' : 'dng solid'); ok.textContent = sign > 0 ? 'Добавить баллы' : 'Снять баллы';
+  };
+  $$('[data-sg]', L.body).forEach(b => b.onclick = () => setSign(Number(b.dataset.sg)));
+  setSign(sign);
+  const err = t => { $('#aErr', L.body).innerHTML = t ? `<div class="err">${I.alert}<span>${esc(t)}</span></div>` : ''; };
+  $('[data-ok]', L.foot).onclick = async () => {
+    const n = Math.round(Number(String($('#aPts', L.body).value).replace(',', '.')) * 100) / 100, why = clean($('#aWhy', L.body).value);
+    if (!(n > 0)) { err('Укажите, сколько баллов.'); return; }
+    if (n > 1000) { err('Не больше 1000 баллов за один раз.'); return; }
+    if (why.length < 3) { err(sign > 0 ? 'Напишите, за что добавляете баллы.' : 'Напишите, за что снимаете баллы.'); return; }
+    if (!(await spellGate(L, [{ el: $('#aWhy', L.body), label: 'За что' }], $('[data-ok]', L.foot)))) return;
+    const b = $('[data-ok]', L.foot); b.disabled = true;
+    try {
+      await safe(() => S.db.collection('adjust').doc().set({ memberId: mid, points: sign * n, reason: why, createdAt: Date.now() }));
+      closeSheet(L); toast(`${shortFio(m.fio)}: ${sign > 0 ? '+' : '−'}${fmtN(n)} ${plural(Math.round(n), 'балл', 'балла', 'баллов')}`);
+    } catch (e) { b.disabled = false; }
+  };
+  setTimeout(() => $('#aPts', L.body).focus(), 50);
+}
+async function deleteAdjust(aid) {
+  const a = S.adjust.find(x => x.id === aid); if (!a || !canDelAdj(a)) return;
+  const n = Number(a.points) || 0;
+  if (!(await confirmSheet(`Удалить запись «${a.reason}» (${n > 0 ? '+' : '−'}${fmtN(Math.abs(n))})? Баллы участника пересчитаются.`))) return;
+  try { await safe(() => S.db.doc('adjust/' + aid).delete()); toast('Запись удалена'); } catch (e) {}
 }
 
 function sortedMembers() {
@@ -1446,6 +1708,7 @@ function renderMembers() {
   }
   const list = sortedMembers();
   if (!list.length) { tb.innerHTML = `<tr><td colspan="8" style="cursor:default"><div class="empty"><div class="eic">${I.search}</div><h3>Никого не нашли</h3><p>Измените запрос или выберите другой коллектив.</p></div></td></tr>`; return; }
+  const hiPts = Math.max(1, ...S.members.map(x => (S.ratings.get(x.id) || { total: 0 }).total));
   tb.innerHTML = list.map((m, i) => {
     const r = (S.ratings.get(m.id) || { total: 0 }).total, pl = S.places.get(m.id), tn = teamsLabel(m);
     const meta = [m.group && 'гр. ' + m.group, m.rank, m.position, tn].filter(Boolean).map(esc).join(' · ');
@@ -1455,7 +1718,7 @@ function renderMembers() {
       <td class="d num">${esc(m.group)}</td><td class="d">${esc(m.position) || '<span class="muted">—</span>'}</td><td class="d">${esc(m.rank) || '<span class="muted">—</span>'}</td>
       <td class="d">${tn ? mTeams(m).map(teamName).filter(Boolean).map(n => `<span class="pill">${esc(n)}</span>`).join(' ') : '<span class="muted">—</span>'}</td>
       ${showAtt ? `<td class="c-r num att-c">${fmtAtt(attPts(S.team, m.id))}</td>` : ''}
-      <td class="c-r"><span class="rate">${pl && pl <= 3 ? `<span class="medal m${pl}" title="${pl}-е место">${pl}</span>` : ''}<b>${fmtN(r)}</b></span></td>
+      <td class="c-r"><span class="rate">${pl && pl <= 3 ? `<span class="medal m${pl}" title="${pl}-е место">${pl}</span>` : ''}${r > 0 ? `<i class="heat" aria-hidden="true"><i style="width:${Math.round(r / hiPts * 100)}%"></i></i>` : ''}<b>${fmtN(r)}</b>${canAdjust(m) ? `<button class="adj-q" type="button" data-adjm="${m.id}" aria-label="Добавить или снять баллы: ${esc(m.fio)}" title="Добавить или снять баллы">±</button>` : ''}</span></td>
       <td class="c-x" data-w><button class="rx" data-delm="${m.id}" aria-label="Удалить ${esc(m.fio)}" title="Удалить">${I.x}</button></td></tr>`;
   }).join('');
 }
@@ -1505,7 +1768,7 @@ function renderEvents() {
     const pct = e.count ? Math.min(100, Math.round(n / e.count * 100)) : 0;
     return `<button class="ev" data-ev="${e.id}">
       <div class="dt"><b class="num">${+d || '—'}</b><span>${MON[+m - 1] || ''}</span><small class="num">${y || ''}</small></div>
-      <div style="min-width:0"><h3>${esc(e.title)}${(lk => lk ? `<span class="lockpill">${I.lock}${esc(lk.name)}</span>` : '')(lockedBy('events/' + e.id))}</h3><div class="chips">${e.level ? `<span class="pill acc">${esc(e.level)}</span>` : ''}${e.type ? `<span class="pill">${esc(e.type)}</span>` : ''}${e.format ? `<span class="pill">${esc(e.format)}</span>` : ''}</div>
+      <div style="min-width:0"><h3>${esc(e.title)}${(lk => lk ? `<span class="lockpill">${I.lock}${esc(lk.name)}</span>` : '')(lockedBy('events/' + e.id))}</h3><div class="chips">${e.level ? `<span class="pill acc">${esc(e.level)}</span>` : ''}${(k => k > 0 ? `<span class="lvf" title="Уровень: ${esc(e.level)}" aria-hidden="true">${[1, 2, 3, 4, 5].map(j => `<svg viewBox="4 2 16 18" class="${j <= k ? 'on' : ''}"><path d="${FB_FLAME}"/></svg>`).join('')}</span>` : '')(5 - lvIdx(e.level))}${e.type ? `<span class="pill">${esc(e.type)}</span>` : ''}${e.format ? `<span class="pill">${esc(e.format)}</span>` : ''}</div>
       <div class="foot"><span class="num">${n}${e.count ? ' из ' + e.count : ''} ${plural(e.count || n, 'участник', 'участника', 'участников')}</span><span class="num">${fmtN(total)} ${plural(Math.round(total), 'балл', 'балла', 'баллов')}</span></div>
       ${e.count ? `<div class="prog"><i style="width:${pct}%"></i></div>` : ''}</div></button>`;
   }).join('');
@@ -1914,10 +2177,11 @@ function renderTeams() {
   if (!S.teams.length) { el.style.display = 'block'; el.innerHTML = `<div class="card"><div class="empty"><div class="eic">${I.shield}</div><h3>Коллективов пока нет</h3><p>Создайте коллектив здесь или прямо при добавлении участника.</p><div data-w style="margin-top:6px"><button class="btn pri" data-act="addteam">Добавить коллектив</button></div></div></div>`; return; }
   el.style.display = '';
   const mine = new Set(myTeams().map(t => t.id)), mode = S.teamMode;
-  const rows = mineFirst(teamStandings(mode), r => r.t.id);
+  const rows = mineFirst(teamStandings(mode), r => r.t.id), hiT = Math.max(1, ...rows.map(r => mode === 'avg' ? r.avg : r.sum));
   el.innerHTML = rows.map(r => `<div class="card tm${mine.has(r.t.id) ? ' mine' : ''}">
     ${mine.has(r.t.id) ? `<span class="mytag">Ваш коллектив</span>` : ''}<div class="row">${r.place && r.place <= 3 ? `<span class="medal m${r.place}">${r.place}</span>` : `<span class="tpl num">${r.place || '–'}</span>`}<h3>${esc(r.t.name)}</h3>${r.week > 0 ? `<span class="gp num" title="Рост суммы баллов за 7 дней">+${fmtN(r.week)} за неделю</span>` : ''}</div>
     <div class="kv k4"><div><b>${r.n}</b><span>${plural(r.n, 'участник', 'участника', 'участников')}</span></div><div><b>${fmtN(r.sum)}</b><span>сумма баллов</span></div><div><b>${fmtN(Math.round(r.avg * 10) / 10)}</b><span>в среднем</span></div><div><b>${r.att == null ? '—' : r.att + '%'}</b><span>явка за 30 дней</span></div></div>
+    <div class="heat wide" title="Сравнение с лидером"><i style="width:${Math.round((mode === 'avg' ? r.avg : r.sum) / hiT * 100)}%"></i></div>
     ${r.best && (S.ratings.get(r.best.id)?.total || 0) > 0 ? `<div class="hint" style="margin:0">Лучший: <b style="color:var(--ink)">${esc(r.best.fio)}</b></div>` : ''}
     ${r.t.leader || schedOf(r.t).length ? `<div class="hint" style="margin:0">${r.t.leader ? `Руководитель: ${(u => u ? avaHtml(u, r.t.leader, 's') : '')(avaOfLeader(r.t.leader))}<b style="color:var(--ink)">${esc(r.t.leader)}</b>` : ''}${r.t.leader && schedOf(r.t).length ? '<br>' : ''}${esc(schedOf(r.t).map(slotTxt).join(', '))}</div>` : ''}
     <div class="row"><button class="btn" data-show="${r.t.id}">${I.users}Участники</button>${canTasks(r.t) ? (n => `<button class="btn" data-tasks="${r.t.id}">${I.task}Задачи${n ? `<span class="tk-n num" title="Не выполнено">${n}</span>` : ''}</button>`)(teamTasks(r.t.id).filter(x => pctOf(x) < 100).length) : ''}<span><button class="ib" data-att="${r.t.id}" aria-label="Посещаемость" title="Посещаемость">${I.check}</button><button class="ib" data-w data-ren="${r.t.id}" aria-label="Переименовать">${I.edit}</button><button class="ib" data-w data-delt="${r.t.id}" aria-label="Удалить">${I.trash}</button></span></div></div>`).join('');
@@ -2116,6 +2380,10 @@ async function exportAll() {
   evs.forEach(e => (e.participants || []).forEach(p => { const m = S.members.find(x => x.id === p.memberId); if (m) rows.push([e.title, e.date, m.fio, m.group, teamsLabel(m), p.category, p.place, ptsFor(e.rules, p)]); }));
   const w3 = XLSX.utils.aoa_to_sheet(rows); w3['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 30 }, { wch: 10 }, { wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 8 }];
   XLSX.utils.book_append_sheet(wb, w3, 'Начисления');
+  const adj = [['Дата', 'ФИО', 'Группа', 'Коллектив', 'Баллы', 'За что', 'Кто изменил']];
+  S.adjust.slice().sort((x, y) => (Number(x.createdAt) || 0) - (Number(y.createdAt) || 0)).forEach(a => { const m = S.members.find(x => x.id === a.memberId); if (m) adj.push([ymdOf(Number(a.createdAt) || 0), m.fio, m.group, teamsLabel(m), Number(a.points) || 0, a.reason, a.author]); });
+  const w4 = XLSX.utils.aoa_to_sheet(adj); w4['!cols'] = [{ wch: 12 }, { wch: 30 }, { wch: 10 }, { wch: 22 }, { wch: 8 }, { wch: 40 }, { wch: 22 }];
+  XLSX.utils.book_append_sheet(wb, w4, 'Баллы вручную');
   const tr = [['Коллектив', 'Участников', 'Сумма баллов']].concat(S.teams.map(t => { const m = S.members.filter(x => inTeam(x, t.id)); return [t.name, m.length, m.reduce((s, x) => s + (S.ratings.get(x.id)?.total || 0), 0)]; }));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tr), 'Коллективы');
   const att = [['Коллектив', 'Дата', 'Время', 'Тема', 'ФИО', 'Отметка']];
@@ -3143,10 +3411,11 @@ function placesOf(tot) {
 /* Рейтинг неделю назад: только баллы, внесённые раньше. Пересчёт — когда меняется база (или раз в минуту). */
 let weekMemo = null;
 function weekAgo() {
-  if (weekMemo && weekMemo.ev === S.events && weekMemo.m === S.members && Date.now() - weekMemo.at < 60000) return weekMemo.v;
+  if (weekMemo && weekMemo.ev === S.events && weekMemo.m === S.members && weekMemo.a === S.adjust && Date.now() - weekMemo.at < 60000) return weekMemo.v;
   const asOf = Date.now() - WEEK, tot = new Map(S.members.map(m => [m.id, 0]));
   for (const ev of S.events) for (const p of ev.participants || []) if (tot.has(p.memberId) && partAt(ev, p) <= asOf) tot.set(p.memberId, tot.get(p.memberId) + ptsFor(ev.rules, p));
-  weekMemo = { ev: S.events, m: S.members, at: Date.now(), v: { tot, places: placesOf(tot) } };
+  for (const a of S.adjust) if (tot.has(a.memberId) && (Number(a.createdAt) || 0) <= asOf) tot.set(a.memberId, r2(tot.get(a.memberId) + (Number(a.points) || 0)));
+  weekMemo = { ev: S.events, m: S.members, a: S.adjust, at: Date.now(), v: { tot, places: placesOf(tot) } };
   return weekMemo.v;
 }
 /* Личный прогресс: место, баллы, изменения за неделю и сколько осталось до следующего места. */
@@ -3719,7 +3988,7 @@ $('#mq').oninput = e => { S.q = e.target.value; renderMembers(); };
 $('#mTeam').onchange = e => { S.team = e.target.value; renderMembers(); };
 $('#eq').oninput = e => { S.eq = e.target.value; renderEvents(); };
 const openRow = e => { const tr = e.target.closest('tr[data-id]'); if (tr) openMember(tr.dataset.id); };
-$('#mBody').addEventListener('click', e => { const x = e.target.closest('[data-delm]'); if (x) { e.stopPropagation(); if (S.db) deleteMember(x.dataset.delm); return; } openRow(e); });
+$('#mBody').addEventListener('click', e => { const q = e.target.closest('[data-adjm]'); if (q) { e.stopPropagation(); adjustSheet(q.dataset.adjm, 1); return; } const x = e.target.closest('[data-delm]'); if (x) { e.stopPropagation(); if (S.db) deleteMember(x.dataset.delm); return; } openRow(e); });
 $('#mBody').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.target.closest('button')) openRow(e); });
 $('#eList').addEventListener('click', e => { const b = e.target.closest('[data-ev]'); if (b) openEvent(b.dataset.ev); });
 document.addEventListener('click', e => {
@@ -3743,6 +4012,167 @@ $('#bAddO').onclick = needDb(() => officialSheet(null));
 $('#oList').addEventListener('click', e => { const b = e.target.closest('[data-of]'); if (b) officialSheet(b.dataset.of); });
 $('#oRoles').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) { S.offRole = b.dataset.r; renderOfficials(); } });
 
+/* ---------- Пожарные баннеры разделов: заголовок, главные цифры, инфографика, анимированная картинка ----------
+ * Баннер создаётся один раз (fbInit) — заголовок раздела переносится в него из .vh.
+ * fireBanner() обновляет только цифры и инфографику открытого раздела и только когда они изменились,
+ * поэтому машина «приезжает» и числа «набегают» один раз, а не при каждом опросе сервера. */
+const FB_FLAME = 'M12 3c1 3.5 5 5.5 5 10a5 5 0 01-10 0c0-2 1-3.5 2-4.5.3 1.6 1 2.5 2 3 0-3 .5-5.5 1-8.5z';
+const FB_ART = {
+  truck: `<svg class="art truck" viewBox="0 0 230 120"><g class="tr-all"><g class="tr-b">
+    <rect x="8" y="40" width="152" height="48" rx="5" fill="#D7261E"/><rect x="8" y="40" width="152" height="9" rx="4" fill="#E8412E"/>
+    <path d="M160 88V46h26l22 22v20z" fill="#E8412E"/><path d="M166 52h17l16 16h-33z" fill="#BFE3F7" opacity=".85"/>
+    <rect x="8" y="66" width="200" height="6" fill="#F2EFE8"/>
+    <g stroke="#F2EFE8" stroke-width="2.4" fill="none" opacity=".9"><path d="M18 28h124M18 36h124M28 28v8M44 28v8M60 28v8M76 28v8M92 28v8M108 28v8M124 28v8"/></g>
+    <g stroke="rgba(0,0,0,.28)" stroke-width="1.6" fill="none"><rect x="18" y="75" width="36" height="11" rx="2"/><rect x="62" y="75" width="36" height="11" rx="2"/><rect x="106" y="75" width="40" height="11" rx="2"/></g>
+    <circle cx="130" cy="55" r="7.5" fill="#B81E17" stroke="#FFC23D" stroke-width="2"/>
+    <rect x="200" y="78" width="10" height="6" rx="2" fill="#FFE08A"/>
+    <circle class="bg1" cx="174" cy="38" r="11" fill="#3D7BD9" opacity=".35"/><circle class="bg2" cx="190" cy="38" r="11" fill="#FF4D3D" opacity=".35"/>
+    <rect class="bcn b1" x="168" y="36" width="10" height="8" rx="3" fill="#5A9BFF"/><rect class="bcn b2" x="184" y="36" width="10" height="8" rx="3" fill="#FF4D3D"/>
+    </g>
+    <g class="whl"><circle cx="46" cy="92" r="14" fill="#1B2431" stroke="#9AA6B6" stroke-width="3"/><path d="M46 82v20M36 92h20" stroke="#9AA6B6" stroke-width="2.5"/></g>
+    <g class="whl"><circle cx="178" cy="92" r="14" fill="#1B2431" stroke="#9AA6B6" stroke-width="3"/><path d="M178 82v20M168 92h20" stroke="#9AA6B6" stroke-width="2.5"/></g>
+    </g><path class="road" d="M0 112h230" stroke="rgba(255,255,255,.22)" stroke-width="2.5" stroke-dasharray="14 10"/></svg>`,
+  helm: `<svg class="art helm" viewBox="0 0 160 130"><defs><clipPath id="fbHc"><path d="M32 92C32 48 56 22 80 22s48 26 48 70z"/></clipPath>
+    <linearGradient id="fbHg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2563A"/><stop offset="1" stop-color="#B81E17"/></linearGradient></defs>
+    <g class="hl"><path d="M32 92C32 48 56 22 80 22s48 26 48 70z" fill="url(#fbHg)"/>
+    <path d="M80 22c7 16 7 54 5 70H75c-2-16-2-54 5-70z" fill="#FFC23D"/>
+    <g clip-path="url(#fbHc)"><g class="hs"><rect x="-10" y="0" width="16" height="120" fill="#fff" opacity=".35" transform="skewX(-20)"/></g></g>
+    <path d="M14 92h132c0 9-8 15-18 15H32c-10 0-18-6-18-15z" fill="#8F1712"/>
+    <path d="M44 100h72v14c-18 7-54 7-72 0z" fill="#BFE3F7" opacity=".38"/>
+    <circle cx="56" cy="66" r="10" fill="#FFC23D"/><path d="M56 59l2.2 4.8h5.2l-4.2 3.2 1.6 5-4.8-3.1-4.8 3.1 1.6-5-4.2-3.2h5.2z" fill="#B81E17"/></g></svg>`,
+  hydr: `<svg class="art hydr" viewBox="0 0 150 140"><rect x="62" y="12" width="16" height="11" rx="2" fill="#8F1712"/>
+    <path d="M44 44c0-14 12-22 26-22s26 8 26 22z" fill="#E8412E"/><rect x="40" y="42" width="60" height="8" rx="3" fill="#FFC23D"/>
+    <rect x="46" y="50" width="48" height="66" rx="6" fill="#D7261E"/><rect x="46" y="50" width="12" height="66" rx="6" fill="#E8412E"/>
+    <rect x="28" y="66" width="20" height="16" rx="3" fill="#B81E17"/><rect x="92" y="66" width="20" height="16" rx="3" fill="#B81E17"/>
+    <circle cx="70" cy="82" r="9" fill="#B81E17" stroke="#FFC23D" stroke-width="2.5"/><rect x="36" y="114" width="68" height="11" rx="3" fill="#8F1712"/>
+    <g fill="#7CC6F2"><circle class="dr" cx="116" cy="74" r="3.4"/><circle class="dr" cx="116" cy="74" r="2.8"/><circle class="dr" cx="116" cy="74" r="3.2"/><circle class="dr" cx="116" cy="74" r="2.4"/></g></svg>`,
+  shld: `<svg class="art shld" viewBox="0 0 150 140"><defs><radialGradient id="fbSg"><stop offset="0" stop-color="#FF8A3D" stop-opacity=".7"/><stop offset="1" stop-color="#FF8A3D" stop-opacity="0"/></radialGradient></defs>
+    <circle class="glw" cx="75" cy="74" r="60" fill="url(#fbSg)"/>
+    <g stroke="#C3CCD8" stroke-width="5" stroke-linecap="round"><path d="M30 122L116 26M120 122L34 26"/></g>
+    <path d="M112 16c11 1 18 10 17 21l-16-6z" fill="#E7ECF3"/><path d="M38 16c-11 1-18 10-17 21l16-6z" fill="#E7ECF3"/>
+    <path d="M75 22l40 14v30c0 26-17 44-40 52-23-8-40-26-40-52V36z" fill="#B81E17" stroke="#FFC23D" stroke-width="3"/>
+    <g class="fl"><path d="M75 44c4 12 18 18 18 34a18 18 0 01-36 0c0-7 4-12 7-15 1 6 4 9 7 11 0-11 2-20 4-30z" fill="#FFC23D"/>
+    <path d="M75 66c2 6 8 9 8 16a8 8 0 01-16 0c0-4 3-7 5-9 .5 3 1.5 4 3 5 0-5 0-8 0-12z" fill="#FFF4D6"/></g></svg>`,
+  ext: `<svg class="art ext" viewBox="0 0 150 140"><rect x="64" y="20" width="9" height="12" fill="#3A4556"/><path d="M54 30h28l6 11H48z" fill="#4A5568"/>
+    <path d="M80 26h22l6 5" stroke="#4A5568" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <rect x="48" y="40" width="40" height="88" rx="14" fill="#D7261E"/><rect x="48" y="40" width="10" height="88" rx="5" fill="#E8412E"/>
+    <rect x="48" y="74" width="40" height="22" fill="#F2EFE8"/><path d="M58 81h20M58 89h12" stroke="#B81E17" stroke-width="3"/>
+    <circle cx="68" cy="57" r="8" fill="#F2EFE8" stroke="#3A4556" stroke-width="2"/><path class="ndl" d="M68 57l4-5" stroke="#B81E17" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M52 41c-20 4-28 30-18 50" stroke="#1B2431" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M33 90l5 11" stroke="#1B2431" stroke-width="8" stroke-linecap="round"/>
+    <g class="pf" fill="#E7ECF3"><circle cx="38" cy="106" r="6"/><circle cx="38" cy="106" r="5"/><circle cx="38" cy="106" r="7"/><circle cx="38" cy="106" r="5.5"/></g></svg>`
+};
+const FB_VIEWS = { feed: 'truck', members: 'helm', events: 'truck', attendance: 'hydr', teams: 'shld', officials: 'ext' };
+const FB_COL = ['#FFC23D', '#F26522', '#D7261E', '#9B1B14', '#7D8796'];
+let fbIo = null;
+function fbInit() {
+  const defs = document.createElement('div');
+  defs.setAttribute('aria-hidden', 'true'); defs.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+  defs.innerHTML = '<svg width="0" height="0"><defs><linearGradient id="fbRg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFC23D"/><stop offset=".6" stop-color="#F26522"/><stop offset="1" stop-color="#D7261E"/></linearGradient>'
+    + '<linearGradient id="fbFg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#D7261E"/><stop offset=".55" stop-color="#F26522"/><stop offset="1" stop-color="#FFC23D"/></linearGradient></defs></svg>';
+  document.body.appendChild(defs);
+  const emb = '<span class="emb">' + '<i></i>'.repeat(12) + '</span>';
+  if ('IntersectionObserver' in window) fbIo = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('off', !e.isIntersecting)));
+  Object.keys(FB_VIEWS).forEach(v => {
+    const sec = $('#v-' + v); if (!sec) return;
+    const b = document.createElement('div');
+    b.className = 'fb fb-' + v; b.id = 'fb-' + v;
+    b.innerHTML = `<div class="fb-fx" aria-hidden="true"><span class="fb-glow"></span>${emb}</div><div class="fb-t"></div><div class="fb-art" aria-hidden="true">${FB_ART[FB_VIEWS[v]]}</div><div class="fb-k"></div><div class="fb-g"></div><span class="fb-st" aria-hidden="true"></span>`;
+    const vh = $('.vh', sec), ttl = vh && vh.firstElementChild;
+    if (ttl && !ttl.classList.contains('acts')) $('.fb-t', b).appendChild(ttl);
+    sec.prepend(b);
+    if (fbIo) fbIo.observe(b);
+  });
+  /* экран входа: пламя по низу и искры */
+  const lg = $('#login');
+  if (lg) {
+    const fx = document.createElement('div'); fx.className = 'lg-fx'; fx.setAttribute('aria-hidden', 'true');
+    fx.innerHTML = emb + '<div class="lg-fl">' + `<svg viewBox="4 2 16 18"><path d="${FB_FLAME}"/></svg>`.repeat(11) + '</div>';
+    lg.prepend(fx);
+  }
+}
+const fbPct = (a, b) => b ? Math.round(a / b * 100) : 0;
+function fbStack(title, rows) {
+  const tot = rows.reduce((s, r) => s + r.v, 0); if (!tot) return '';
+  return `<div class="fg-h">${esc(title)}</div><div class="sbar">${rows.map((r, i) => `<i style="flex:${r.v};--c:${FB_COL[i]}" title="${esc(r.n)}"></i>`).join('')}</div>
+    <div class="lg">${rows.map((r, i) => `<span><i style="--c:${FB_COL[i]}"></i>${esc(r.n)} <b>${fbPct(r.v, tot)}%</b></span>`).join('')}</div>`;
+}
+function fbData(v) {
+  const me = Auth.me, mid = me && me.memberId;
+  const tot = id => (S.ratings.get(id) || {}).total || 0;
+  const allPts = r2(S.members.reduce((s, m) => s + tot(m.id), 0));
+  if (v === 'feed') {
+    const h = new Date().getHours(), now = new Date();
+    const hi = h >= 5 && h < 12 ? 'Доброе утро' : h >= 12 && h < 18 ? 'Добрый день' : h >= 18 && h < 23 ? 'Добрый вечер' : 'Доброй ночи';
+    const w = me ? clean(me.fio).split(' ') : [], nm = w[1] && w[1].length > 1 && !/\./.test(w[1]) ? w[1] : '';
+    const parts = S.events.reduce((s, e) => s + (e.participants || []).length, 0);
+    return { t: `<h1>${hi}${nm ? ', ' + esc(nm) : ''}</h1><p><span class="fb-d">${DOW_L[((now.getDay() + 6) % 7) + 1]}, ${now.getDate()} ${MON_G[now.getMonth()]}</span></p>`,
+      k: [{ v: S.members.length, l: plural(S.members.length, 'участник', 'участника', 'участников') }, { v: S.events.length, l: plural(S.events.length, 'мероприятие', 'мероприятия', 'мероприятий') },
+        { v: parts, l: plural(parts, 'участие', 'участия', 'участий') }, { v: allPts, l: 'баллов заработано', hot: 1 }] };
+  }
+  if (v === 'members') {
+    const best = S.members.slice().sort((a, b) => tot(b.id) - tot(a.id))[0];
+    const k = [{ v: S.members.length, l: plural(S.members.length, 'участник', 'участника', 'участников') }, { v: allPts, l: 'баллов у всех', hot: 1 },
+      { v: S.members.length ? r2(allPts / S.members.length) : 0, l: 'в среднем на участника' }];
+    const pl = mid && S.places.get(mid);
+    if (pl) k.push({ v: pl + '-е', l: `ваше место из ${S.members.length}`, hot: 1 });
+    else k.push({ v: best && tot(best.id) > 0 ? clean(best.fio).split(' ')[0] : '—', l: best && tot(best.id) > 0 ? `лидер · ${fmtN(tot(best.id))} ${plural(Math.round(tot(best.id)), 'балл', 'балла', 'баллов')}` : 'лидер рейтинга' });
+    const st = teamStandings('sum').filter(r => r.sum > 0), top = st.slice(0, 4).map(r => ({ n: r.t.name, v: r.sum }));
+    const rest = st.slice(4).reduce((s, r) => s + r.sum, 0); if (rest) top.push({ n: 'Остальные', v: rest });
+    return { k, g: fbStack('Баллы по коллективам', top) };
+  }
+  if (v === 'events') {
+    const parts = S.events.reduce((s, e) => s + (e.participants || []).length, 0);
+    const pts = r2(S.events.reduce((s, e) => s + (e.participants || []).reduce((a, p) => a + ptsFor(e.rules, p), 0), 0));
+    const y = String(new Date().getFullYear()), yr = S.events.filter(e => String(e.date || '').startsWith(y)).length;
+    const lv = scoring().levels.map(l => ({ l, n: S.events.filter(e => norm(e.level) === norm(l)).length }));
+    const other = S.events.length - lv.reduce((s, x) => s + x.n, 0); if (other > 0) lv.push({ l: 'Другой уровень', n: other });
+    const mx = Math.max(1, ...lv.map(x => x.n));
+    return { k: [{ v: S.events.length, l: plural(S.events.length, 'мероприятие', 'мероприятия', 'мероприятий') }, { v: yr, l: 'в ' + y + ' году' },
+        { v: parts, l: plural(parts, 'участие', 'участия', 'участий') }, { v: pts, l: 'баллов начислено', hot: 1 }],
+      g: S.events.length ? `<div class="fg-h">Мероприятия по уровням</div><div class="lvb">${lv.filter(x => x.n).map(x => `<span>${esc(x.l)}</span><em><i style="width:${fbPct(x.n, mx)}%"></i></em><b>${x.n}</b>`).join('')}</div>` : '' };
+  }
+  if (v === 'attendance') {
+    const tid = S.att.teamId, ym = S.att.ym || '', today = localToday();
+    const ss = S.sessions.filter(q => (!tid || q.teamId === tid) && String(q.date || '').startsWith(ym) && String(q.date) <= today).sort((a, b) => String(a.date).localeCompare(String(b.date)) || String(a.time || '').localeCompare(String(b.time || '')));
+    let p = 0, a = 0, e = 0; const bars = [];
+    ss.forEach(q => { let qp = 0, qn = 0; Object.values(q.marks || {}).forEach(x => { if (!x) return; qn++; if (x === 'p') { p++; qp++; } else if (x === 'a') a++; else if (x === 'e') e++; }); if (qn) bars.push({ v: fbPct(qp, qn), d: q.date }); });
+    const n = p + a + e, pc = fbPct(p, n), mn = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'][+ym.slice(5, 7) - 1] || '';
+    const sp = bars.slice(-12);
+    return { k: [{ v: ss.length, l: plural(ss.length, 'занятие', 'занятия', 'занятий') + ' в месяце' }, { v: n ? pc + '%' : '—', l: 'явка', hot: 1 },
+        { v: a, l: 'пропусков без причины' }, { v: e, l: 'по уважительной' }],
+      g: sp.length ? `<div class="fg-h">Явка по занятиям${mn ? ' · ' + esc(mn) : ''}</div><div class="ati"><div class="ring"><svg viewBox="0 0 44 44"><circle class="rb" cx="22" cy="22" r="18"/><circle class="rf" cx="22" cy="22" r="18" pathLength="100" style="stroke-dasharray:${pc} 100"/></svg><b>${pc}%</b></div>
+        <div style="flex:1;min-width:0"><div class="spk">${sp.map(x => `<i class="${x.v < 60 ? 'lo' : ''}" style="height:${Math.max(6, x.v)}%" title="${esc(fmtD(x.d))}: ${x.v}%"></i>`).join('')}</div><div class="spk-c"><span>${esc(fmtD(sp[0].d))}</span><span>${esc(fmtD(sp[sp.length - 1].d))}</span></div></div></div>` : '' };
+  }
+  if (v === 'teams') {
+    const st = teamStandings(S.teamMode || 'sum'), uniq = new Set(S.members.filter(m => mTeams(m).length).map(m => m.id)).size;
+    const at = st.filter(r => r.att != null), att = at.length ? Math.round(at.reduce((s, r) => s + r.att, 0) / at.length) : null;
+    const mine = new Set(myTeams().map(t => t.id)), my = st.find(r => mine.has(r.t.id));
+    const k = [{ v: S.teams.length, l: plural(S.teams.length, 'коллектив', 'коллектива', 'коллективов') }, { v: uniq, l: 'участников в коллективах' }, { v: allPts, l: 'баллов всего', hot: 1 }];
+    k.push(my && my.place ? { v: my.place + '-е', l: 'место: ' + my.t.name, hot: 1 } : { v: att == null ? '—' : att + '%', l: 'средняя явка за 30 дней' });
+    const top = st.filter(r => (S.teamMode === 'avg' ? r.avg : r.sum) > 0).slice(0, 3), mx = Math.max(1, ...top.map(r => S.teamMode === 'avg' ? r.avg : r.sum));
+    const col = (r, i) => r ? `<div class="p${i + 1}"><small>${esc(r.t.name)}</small><em style="height:${Math.max(26, Math.round((S.teamMode === 'avg' ? r.avg : r.sum) / mx * 78))}px">${fmtN(S.teamMode === 'avg' ? r.avg : r.sum)}</em></div>` : '<div></div>';
+    return { k, g: top.length ? `<div class="fg-h">Пьедестал коллективов</div><div class="pdm">${col(top[1], 1)}${col(top[0], 0)}${col(top[2], 2)}</div>` : '' };
+  }
+  if (v === 'officials') {
+    const c = r => S.officials.filter(o => hasRole(o, r)).length;
+    return { k: [{ v: S.officials.length, l: 'должностных лиц' }, { v: c('addressee'), l: 'на кого пишем' }, { v: c('signer'), l: 'подписывают' }, { v: c('responsible'), l: 'ответственные' }] };
+  }
+  return null;
+}
+function fireBanner() {
+  const v = S.view, b = $('#fb-' + v);
+  if (!b || !S.ready.m || !S.ready.e) return;
+  const d = fbData(v); if (!d) return;
+  const sig = JSON.stringify(d);
+  if (b.dataset.sig === sig) return;
+  const first = !b.dataset.sig; b.dataset.sig = sig;
+  if (d.t) $('.fb-t', b).innerHTML = d.t;
+  $('.fb-k', b).innerHTML = d.k.map(x => `<div${x.hot ? ' class="hot"' : ''}><b class="num"${first && typeof x.v === 'number' ? ` data-cu="${x.v}"` : ''}>${typeof x.v === 'number' ? fmtN(x.v) : esc(x.v)}</b><span>${esc(x.l)}</span></div>`).join('');
+  $('.fb-g', b).innerHTML = d.g || '';
+  b.classList.toggle('nog', !d.g);
+  if (first) countUp(b);
+}
+
 function render() {
   computeRatings();
   $$('.cnt[data-c]').forEach(c => c.textContent = (S[c.dataset.c] || []).length);
@@ -3752,6 +4182,7 @@ function render() {
   if (S.view === 'teams') renderTeams();
   if (S.view === 'attendance') renderAttendance();
   if (S.view === 'officials') renderOfficials();
+  fireBanner();
   layers.forEach(L => L.refresh && L.refresh());
 }
 let raf = 0;
@@ -3802,7 +4233,7 @@ async function holdLock(L, key) {
   return { ok: true };
 }
 window.addEventListener('pagehide', () => { layers.slice().forEach(L => { if (L.onClose) { try { L.onClose(); } catch (e) {} L.onClose = null; } }); });
-const Store = { locks: {}, ver: null, data: { members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [] }, subs: {}, token: lsGet('reiting_tok'), timer: 0, fails: 0 };
+const Store = { locks: {}, ver: null, data: { members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], adjust: [] }, subs: {}, token: lsGet('reiting_tok'), timer: 0, fails: 0 };
 /* ---------- кэш в браузере (IndexedDB): база, профиль, аватары, фото ----------
  * Ссылка открывается сразу с данными прошлого визита, а сервер лишь подтверждает, что они свежие.
  * Миниатюры и фото хранятся здесь же: файлы на Диске не меняются, поэтому повторно не скачиваются.
@@ -3860,7 +4291,7 @@ function applyState(st) {
   Store.ver = st.version;
   if (st.role && Auth.me && st.role !== Auth.me.role) refreshMe();
   /* после сохранения сервер присылает только изменённые разделы */
-  const keys = st.partial ? Object.keys(st.data || {}) : ['members', 'teams', 'events', 'officials', 'sessions', 'settings', 'news', 'tasks'];
+  const keys = st.partial ? Object.keys(st.data || {}) : ['members', 'teams', 'events', 'officials', 'sessions', 'settings', 'news', 'tasks', 'adjust'];
   for (const k of keys) { Store.data[k] = st.data[k] || []; emit(k); }
   saveState();
   if (keys.includes('events')) thPrefetchSoon();
@@ -4174,9 +4605,12 @@ function editAccount(a, after) {
 function openBots() {
   const L = openSheet({ title: 'Боты уведомлений' });
   const line = (name, st) => !st ? `${name}: токен не задан` : st.ok ? `${name}: работает, бот @${esc(st.bot)}` : `${name}: ошибка — ${esc(st.err || '')}`;
+  // ответы на кнопки и сообщения: сразу (вебхук) или раз в 5 минут; детали ошибки Telegram помогают разобраться
+  const hookLine = h => !h ? '' : [h.tg && `<br>Ответы в Telegram: ${h.tg.on ? 'сразу' : h.tg.offUntil ? 'раз в 5 минут (до ' + esc(h.tg.offUntil) + ')' : 'раз в 5 минут'}${h.tg.hit ? ', последний вызов ' + esc(h.tg.hit) : ''}${h.tg.err ? `<br><small>Telegram: ${esc(h.tg.err)}${h.tg.errAt ? ' (' + esc(h.tg.errAt) + ')' : ''}, ждут доставки: ${h.tg.pending || 0}</small>` : ''}`,
+    h.max && `<br>Ответы в MAX: ${h.max.on ? 'сразу' : 'раз в 5 минут'}${h.max.hit ? ', последний вызов ' + esc(h.max.hit) : ''}`].filter(Boolean).join('');
   const draw = st => {
     L.body.innerHTML = `<div class="hint" style="margin:0 0 10px">Бот присылает участникам напоминания о занятиях по расписанию их коллективов. Токен выдаёт BotFather (Telegram) или платформа MAX для партнёров. Пустое поле оставляет прежний токен, «-» удаляет его.</div>
-      <div id="bSt">${st ? `<div class="hint" style="margin:0">${line('Telegram', st.tg)}<br>${line('MAX', st.max)}<br>${!st.green ? 'MAX через Green-API: не настроен' : st.green.ok ? `MAX через Green-API: работает, номеров с галочкой — ${st.maxPhones}` : `MAX через Green-API: ошибка — ${esc(st.green.err || '')}`}<br>Подключились: Telegram — ${st.tgLinked}, MAX-бот — ${st.maxLinked}<br>Автоотправка: ${st.trigger ? 'включена (каждые 5 минут)' : 'ещё не включена'}</div>` : '<div class="skel"></div>'}</div>
+      <div id="bSt">${st ? `<div class="hint" style="margin:0">${line('Telegram', st.tg)}<br>${line('MAX', st.max)}<br>${!st.green ? 'MAX через Green-API: не настроен' : st.green.ok ? `MAX через Green-API: работает, номеров с галочкой — ${st.maxPhones}` : `MAX через Green-API: ошибка — ${esc(st.green.err || '')}`}<br>Подключились: Telegram — ${st.tgLinked}, MAX-бот — ${st.maxLinked}<br>Автоотправка: ${st.trigger ? 'включена (каждые 5 минут)' : 'ещё не включена'}${hookLine(st.hook)}</div>` : '<div class="skel"></div>'}</div>
       <label class="lbl" for="bTg">Токен Telegram-бота</label><input class="fld" id="bTg" placeholder="${st && st.tg ? 'задан' : '123456:ABC…'}" autocomplete="off" autocapitalize="off" spellcheck="false">
       <label class="lbl" for="bMax">Токен бота MAX <span class="muted">· только для организаций</span></label><input class="fld" id="bMax" placeholder="${st && st.max ? 'задан' : ''}" autocomplete="off" autocapitalize="off" spellcheck="false">
       <span class="lbl">MAX через Green-API <span class="muted">· без своего бота, на номер телефона</span></span>
@@ -4199,7 +4633,7 @@ function openBots() {
 
 function boot() {
   if (!hasApi()) {
-    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true, k: true }; S.canWrite = false; S.canEv = false; document.body.classList.add('ro', 'roe');
+    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true, k: true, j: true }; S.canWrite = false; S.canEv = false; document.body.classList.add('ro', 'roe');
     $('#noDb').textContent = 'Это файл приложения. Он работает, когда открыт по ссылке веб-приложения Google Apps Script.';
     $('#noDb').hidden = false; setSync(false, 'Нет базы'); render(); return;
   }
@@ -4209,9 +4643,10 @@ function boot() {
   });
   sub('members', 'members', 'm'); sub('teams', 'teams', 't'); sub('events', 'events', 'e');
   sub('officials', 'officials', 'o'); sub('sessions', 'sessions', 's'); sub('settings', 'settings', 'g'); sub('news', 'news', 'n');
-  sub('tasks', 'tasks', 'k');
+  sub('tasks', 'tasks', 'k'); sub('adjust', 'adjust', 'j');
   startSession();
 }
+fbInit();
 render();
 boot();
 })();
