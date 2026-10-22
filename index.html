@@ -110,6 +110,7 @@ main{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
 .ib{width:40px;height:40px;display:grid;place-items:center;border-radius:10px;border:0;background:none;color:var(--muted)}
 .ib:hover{background:var(--surface-2);color:var(--ink)}
 body.ro [data-w]{display:none!important}
+body.roe [data-we]{display:none!important}
 
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
 .search{position:relative;flex:1 1 240px;min-width:0}
@@ -971,7 +972,7 @@ button.fi:active{transform:scale(.995)}
   <section class="view" id="v-events" hidden>
     <div class="vh">
       <div><h1>Мероприятия</h1><p>Каждое мероприятие начисляет баллы своим участникам</p></div>
-      <div class="acts"><button class="btn" id="bScore"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M3.5 15h17M9.5 4v16"/></svg>Таблица баллов</button><button class="btn dng" id="bDelAllE" data-w><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Удалить все</button><button class="btn pri" id="bAddE" data-w data-addev><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Добавить мероприятие</button></div>
+      <div class="acts"><button class="btn" id="bScore"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M3.5 15h17M9.5 4v16"/></svg>Таблица баллов</button><button class="btn dng" id="bDelAllE" data-we><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Удалить все</button><button class="btn pri" id="bAddE" data-we data-addev><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Добавить мероприятие</button></div>
     </div>
     <div class="bar"><label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="eq" type="search" placeholder="Поиск по названию…" autocomplete="off"></label></div>
     <div id="eList" class="evs"></div>
@@ -1050,7 +1051,7 @@ const DEF_RULES = {
 };
 const DEF_LEVEL = ['Внутреннее', 'Городское', 'Региональное', 'Всероссийское', 'Международное'];
 
-const S = { db: null, canWrite: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false },
+const S = { db: null, canWrite: true, canEv: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false },
   view: 'feed', feedN: 12, teamMode: 'sum', sort: { key: 'rating', dir: 'desc' }, q: '', team: '', eq: '', ratings: new Map(), places: new Map() };
 
 /* ---------- toast ---------- */
@@ -1457,7 +1458,7 @@ function renderMembers() {
 
 /* ---------- events ---------- */
 function addEvent() {
-  if (Auth.me && Auth.me.role !== 'admin') { toast('Добавлять мероприятия может только администратор'); return; }
+  if (Auth.me && Auth.me.role !== 'admin' && Auth.me.role !== 'moderator') { toast('Добавлять мероприятия может только администратор или модератор'); return; }
   const resp = () => [...new Set(S.officials.filter(o => hasRole(o, 'responsible')).map(o => o.name).concat(S.events.map(e => e.responsible).filter(Boolean)))];
   wizard({
     title: 'Новое мероприятие', finishLabel: 'Создать', data: { date: localToday() },
@@ -1486,7 +1487,7 @@ function addEvent() {
 function renderEvents() {
   const el = $('#eList');
   if (!S.ready.e) { el.innerHTML = '<div class="card"><div class="skel"></div><div class="skel"></div></div>'; return; }
-  if (!S.events.length) { el.style.display = 'block'; el.innerHTML = `<div class="card"><div class="empty"><div class="eic">${I.cal}</div><h3>Мероприятий пока нет</h3><p>Создайте мероприятие, задайте баллы за категорию и место, затем добавьте участников — рейтинг пересчитается сам.</p><div data-w style="margin-top:6px"><button class="btn pri" data-act="addev" data-addev>Добавить мероприятие</button></div></div></div>`; return; }
+  if (!S.events.length) { el.style.display = 'block'; el.innerHTML = `<div class="card"><div class="empty"><div class="eic">${I.cal}</div><h3>Мероприятий пока нет</h3><p>Создайте мероприятие, задайте баллы за категорию и место, затем добавьте участников — рейтинг пересчитается сам.</p><div data-we style="margin-top:6px"><button class="btn pri" data-act="addev" data-addev>Добавить мероприятие</button></div></div></div>`; return; }
   el.style.display = '';
   const q = norm(S.eq);
   const lvIdx = l => { const i = scoring().levels.findIndex(x => norm(x) === norm(l)); return i < 0 ? 99 : i; };
@@ -1610,7 +1611,7 @@ function openEvent(id, justCreated) {
     const n = phList ? phList.length : 0;
     const head = phEl('div', 'sec'), h3 = phEl('h3'); h3.textContent = 'Фото' + (phList ? ` (${n} из ${PH_MAX})` : '');
     head.appendChild(h3);
-    if (S.canWrite && phList && n < PH_MAX) {
+    if (S.canEv && phList && n < PH_MAX) {
       const lab = phEl('label', 'btn' + (phBusy ? ' dis' : '')); lab.innerHTML = I.plus + ' Добавить фото';
       const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/jpeg,image/png,image/heic,image/heif,image/webp,image/gif'; inp.multiple = true; inp.hidden = true; inp.disabled = phBusy;
       inp.addEventListener('change', () => { const arr = [...inp.files]; inp.value = ''; phAdd(arr); });
@@ -1624,7 +1625,7 @@ function openEvent(id, justCreated) {
       phList.forEach(p => {
         const fig = phEl('figure', 'ph'), img = document.createElement('img');
         img.alt = 'Фото мероприятия'; if (p.thumb) img.src = p.thumb; img.dataset.phopen = p.id; fig.appendChild(img);
-        if (S.canWrite) { const x = phEl('button', 'ph-x'); x.type = 'button'; x.dataset.phdel = p.id; x.setAttribute('aria-label', 'Удалить фото'); x.textContent = '×'; fig.appendChild(x); }
+        if (S.canEv) { const x = phEl('button', 'ph-x'); x.type = 'button'; x.dataset.phdel = p.id; x.setAttribute('aria-label', 'Удалить фото'); x.textContent = '×'; fig.appendChild(x); }
         grid.appendChild(fig);
       });
       box.appendChild(grid);
@@ -1731,8 +1732,8 @@ function openEvent(id, justCreated) {
       ${editing && n ? `<div class="hint">Несохранённых изменений: ${n}. Они применятся все сразу после «Сохранить».</div>` : ''}`;
     L.body.scrollTop = st;
     phRender();
-    const rep = `<button class="btn" data-rep data-w>${I.doc}Рапорт</button>`, del = `<button class="btn dng" data-delev>${I.trash}Удалить</button>`;
-    L.foot.innerHTML = !S.canWrite ? `${rep}<span class="sp"></span><button class="btn" data-close>Закрыть</button>`
+    const rep = `<button class="btn" data-rep data-we>${I.doc}Рапорт</button>`, del = `<button class="btn dng" data-delev>${I.trash}Удалить</button>`;
+    L.foot.innerHTML = !S.canEv ? `${rep}<span class="sp"></span><button class="btn" data-close>Закрыть</button>`
       : editing ? `${del}<span class="sp"></span><button class="btn" data-editev>${I.edit}Данные</button><button class="btn" data-cancelev>Отмена</button><button class="btn pri" data-saveev ${n ? '' : 'disabled'}>Сохранить${n ? ` (${n})` : ''}</button>`
       : `${rep}${del}<span class="sp"></span><button class="btn" data-close>Закрыть</button><button class="btn pri" data-start ${lk ? 'disabled' : ''}>${I.edit}Редактировать</button>`;
   };
@@ -1787,7 +1788,7 @@ function openEvent(id, justCreated) {
     }
   });
   L.refresh = draw; draw(); phLoad();
-  if (justCreated && S.canWrite) startEdit();
+  if (justCreated && S.canEv) startEdit();
 }
 
 function editEvent(id) {
@@ -3367,7 +3368,7 @@ function feedSess(q, ts) {
 }
 /* Что попадает в ленту: итоги мероприятий, новые участники (по дням), отмеченные занятия своих коллективов. */
 function feedItems() {
-  const me = Auth.me, all = !me || me.role === 'admin', mine = new Set(myTeams().map(t => t.id)), now = Date.now(), items = [];
+  const me = Auth.me, all = !me || me.role === 'admin' || me.role === 'moderator', mine = new Set(myTeams().map(t => t.id)), now = Date.now(), items = [];
   S.events.forEach(e => {
     const ps = e.participants || [], ph = (e.photos || []).filter(p => p && p.id);
     if (!ps.length && !ph.length) return;
@@ -3390,13 +3391,13 @@ let feedSig = [];
 function renderFeed() {
   const el = $('#feedBody');
   if (!S.ready.m || !S.ready.e) { el.innerHTML = '<div class="fd-sk"></div><div class="fd-sk"></div><div class="fd-sk"></div>'; feedSig = []; return; }
-  const sig = [S.events, S.members, S.sessions, S.teams, S.news, S.canWrite, Auth.me, Auth.av, S.feedN, ymdOf(Date.now()), Math.floor(Date.now() / 60000)];
+  const sig = [S.events, S.members, S.sessions, S.teams, S.news, S.canEv, Auth.me, Auth.av, S.feedN, ymdOf(Date.now()), Math.floor(Date.now() / 60000)];
   if (sig.length === feedSig.length && sig.every((v, i) => v === feedSig[i])) return;
   feedSig = sig;
   const me = Auth.me, role = me ? me.role : '', h = new Date().getHours(), now = new Date();
   const hi = h >= 5 && h < 12 ? 'Доброе утро' : h >= 12 && h < 18 ? 'Добрый день' : h >= 18 && h < 23 ? 'Добрый вечер' : 'Доброй ночи';
   const w = me ? clean(me.fio).split(' ') : [], nm = w[1] && w[1].length > 1 && !/\./.test(w[1]) ? w[1] : '';
-  let html = `<div class="fd-hi"><div><h1>${hi}${nm ? ', ' + esc(nm) : ''}</h1><p>${DOW_L[((now.getDay() + 6) % 7) + 1]}, ${now.getDate()} ${MON_G[now.getMonth()]}</p></div>${S.canWrite && S.db ? `<button class="btn pri fd-add" type="button" data-nadd>${I.plus}<span>Новость</span></button>` : ''}</div>`;
+  let html = `<div class="fd-hi"><div><h1>${hi}${nm ? ', ' + esc(nm) : ''}</h1><p>${DOW_L[((now.getDay() + 6) % 7) + 1]}, ${now.getDate()} ${MON_G[now.getMonth()]}</p></div>${S.canEv && S.db ? `<button class="btn pri fd-add" type="button" data-nadd>${I.plus}<span>Новость</span></button>` : ''}</div>`;
   const wl = weekLeaders(), myId = me && me.memberId;
   if (wl.length) html += `<div class="wl" aria-label="Лидеры недели">${wl.map((x, i) => `<button class="wp${x.m.id === myId ? ' me' : ''}" type="button" data-mem="${x.m.id}"><span class="av${i === 0 ? ' r1' : ''}">${avaHtml(avaOfMember(x.m), x.m.fio)}${i === 0 ? `<span class="rk c" aria-hidden="true">${I.crown}</span>` : i < 3 ? `<span class="rk">${i + 1}</span>` : ''}</span><b>${x.m.id === myId ? 'Вы' : esc(shortFio(x.m.fio))}</b><em class="num">+${fmtN(x.d)}</em></button>`).join('')}</div>`;
   if (me && me.memberId && S.ratings.has(me.memberId)) html += heroMember(me.memberId);
@@ -3535,7 +3536,7 @@ function feedNews(n, ts, pinned) {
   const av = avaOfLeader(n.author || '');
   return `<article class="fi fn${pinned ? ' pin' : ''}" data-k="nw${esc(n.id)}">
     ${pinned ? `<div class="fn-pin">${I.pin}Закреплено</div>` : ''}
-    <div class="fi-h">${av ? avaHtml(av, n.author) : `<span class="ic">${I.news}</span>`}<div><b>${esc(n.author || 'Новость')}</b><small>Новость · ${pinned ? dayLabel(ts).toLowerCase() : agoTxt(ts)}</small></div>${S.canWrite && S.db ? `<button class="ib" type="button" data-nedit="${esc(n.id)}" aria-label="Изменить новость">${I.dots}</button>` : ''}</div>
+    <div class="fi-h">${av ? avaHtml(av, n.author) : `<span class="ic">${I.news}</span>`}<div><b>${esc(n.author || 'Новость')}</b><small>Новость · ${pinned ? dayLabel(ts).toLowerCase() : agoTxt(ts)}</small></div>${S.canEv && S.db ? `<button class="ib" type="button" data-nedit="${esc(n.id)}" aria-label="Изменить новость">${I.dots}</button>` : ''}</div>
     ${ph.length ? mosaic(ph, own.length ? 'n:' + n.id : e.id) : ''}
     <div class="fi-b">${n.title ? `<h3>${esc(n.title)}</h3>` : ''}${n.text ? `<div class="nt${long ? ' clamp' : ''}">${newsBody(n.text)}</div>${long ? '<button class="nmore" type="button" data-nmore>Читать дальше</button>' : ''}` : ''}
     ${e ? `<button class="nev" type="button" data-ev="${esc(e.id)}"><span class="ic">${I.cup}</span><span style="min-width:0;flex:1"><b>${esc(e.title)}</b><small>${esc([e.level, e.date && fmtD(e.date), (e.participants || []).length ? (e.participants || []).length + ' ' + plural((e.participants || []).length, 'участник', 'участника', 'участников') : ''].filter(Boolean).join(' · '))}</small></span>${I.right}</button>` : ''}</div></article>`;
@@ -3558,7 +3559,7 @@ function feedbackSheet() {
   };
 }
 function newsSheet(id) {
-  if (!S.canWrite || !S.db) { toast('Новости публикуют руководители и администратор'); return; }
+  if (!S.canEv || !S.db) { toast('Новости публикуют руководители, модераторы и администратор'); return; }
   const n = id ? S.news.find(x => x.id === id) : null;
   if (id && !n) { toast('Новость уже удалили'); return; }
   const L = openSheet({ title: n ? 'Изменить новость' : 'Новая новость' });
@@ -3785,7 +3786,7 @@ function askName() {
   });
 }
 async function holdLock(L, key) {
-  if (!S.canWrite || !S.db) return { ok: false };
+  if (!(key.startsWith('events/') ? S.canEv : S.canWrite) || !S.db) return { ok: false };
   if (!Me.name && !(await askName())) return { ok: false };
   let r;
   try { r = await gcall('lockAcquire', key, Me.id, Me.name, Store.token); } catch (e) { toast(dbErr(e)); return { ok: false }; }
@@ -3885,8 +3886,8 @@ const GDB = {
   batch: ops => writeOps(ops)
 };
 /* ---------- вход, роли, личный кабинет ---------- */
-const ROLE_RU = { participant: 'Участник', leader: 'Руководитель', admin: 'Администратор' };
-const ROLE_ORDER = { admin: 0, leader: 1, participant: 2 };
+const ROLE_RU = { participant: 'Участник', leader: 'Руководитель', moderator: 'Модератор', admin: 'Администратор' };
+const ROLE_ORDER = { admin: 0, moderator: 1, leader: 2, participant: 3 };
 const Auth = { me: null, avVer: null, av: {} };
 const initials = fio => clean(fio).split(' ').slice(0, 2).map(w => w.charAt(0)).join('').toUpperCase();
 const avaHtml = (url, fio, cls = '') => url ? `<img class="ava ${cls}" src="${esc(url)}" alt="">` : `<span class="ava ${cls}" aria-hidden="true">${esc(initials(fio))}</span>`;
@@ -3897,8 +3898,11 @@ function applyRole() {
   document.body.classList.toggle('r-participant', r === 'participant');
   document.body.classList.toggle('r-leader', r === 'leader');
   document.body.classList.toggle('r-admin', r === 'admin');
+  document.body.classList.toggle('r-moderator', r === 'moderator');
   S.canWrite = r === 'leader' || r === 'admin';
+  S.canEv = S.canWrite || r === 'moderator'; // модератор: мероприятия и новости, остальное только просмотр
   document.body.classList.toggle('ro', !S.canWrite);
+  document.body.classList.toggle('roe', !S.canEv);
   $('#brandT').hidden = !!me; $('#who').hidden = !me;
   if (me) {
     if (me.id === accOf()) Kv.set('me', me);
@@ -4083,21 +4087,22 @@ function openCabinet(opt = {}) {
 function openAccounts() {
   const L = openSheet({ title: 'Учётные записи', wide: true });
   let list = null, q = '';
-  L.body.innerHTML = `<div class="hint" style="margin:0 0 10px">Логины и пароли видит только администратор. Участникам и руководителям коллективов они создаются автоматически. Пароли лежат открытым текстом в листе «Учётные записи», поэтому доступ к самой Google Таблице должен быть только у администратора.</div>
-    <div class="row2" style="margin:0 0 10px"><button class="btn sm" type="button" data-bots>Боты уведомлений (токены Telegram и MAX)</button><button class="btn sm" type="button" data-visl>${I.eye}Кто заходил</button></div>
+  L.body.innerHTML = `<div class="hint" style="margin:0 0 10px">Логины и пароли видит только администратор. Участникам и руководителям коллективов они создаются автоматически, модераторов добавляете вы. Модератор ведёт мероприятия и новости, остальное только смотрит. Пароли лежат открытым текстом в листе «Учётные записи», поэтому доступ к самой Google Таблице должен быть только у администратора.</div>
+    <div class="row2" style="margin:0 0 10px"><button class="btn sm" type="button" data-bots>Боты уведомлений (токены Telegram и MAX)</button><button class="btn sm" type="button" data-visl>${I.eye}Кто заходил</button><button class="btn sm" type="button" data-addmod>${I.plus}Добавить модератора</button></div>
     <div class="bar"><label class="search">${I.search}<input id="aq" type="search" placeholder="Поиск по ФИО или логину" autocomplete="off"></label></div>
     <div id="aList"><div class="skel"></div><div class="skel"></div></div>`;
   L.foot.innerHTML = '<button class="btn" data-xl>Скачать Excel</button><span class="sp"></span><button class="btn pri" data-close>Готово</button>';
   $('[data-bots]', L.body).onclick = () => openBots();
   $('[data-visl]', L.body).onclick = () => openVisits();
+  $('[data-addmod]', L.body).onclick = () => addModerator(load);
   const rows = () => (list || []).filter(a => !q || norm([a.fio, a.login, a.telegram, a.max].join(' ')).includes(q))
     .sort((a, b) => (ROLE_ORDER[a.role] - ROLE_ORDER[b.role]) || coll.compare(a.fio, b.fio));
   const draw = () => {
     const f = rows();
     $('#aList', L.body).innerHTML = !f.length ? '<div class="hint">Никого не нашли.</div>' : `<div class="accl">${f.map(a => `<button class="accr" type="button" data-acc="${esc(a.id)}"><span class="nm"><b>${esc(a.fio)}</b><small>${esc([ROLE_RU[a.role], (a.telegram || a.tgLinked) && 'TG ' + (a.telegram || '') + (a.tgLinked ? ' ✓' : ''), (a.max || a.maxLinked) && 'MAX ' + (a.max || '') + (a.maxLinked ? ' ✓' : '')].filter(Boolean).join(' · '))}</small></span><span class="cr"><span>${esc(a.login)}</span><span class="muted">${esc(a.password)}</span></span></button>`).join('')}</div>`;
   };
-  const load = async () => {
-    try { list = await withTimeout(gcall('adminListAccounts', Store.token), 25000); draw(); }
+  const load = async openId => {
+    try { list = await withTimeout(gcall('adminListAccounts', Store.token), 25000); draw(); if (typeof openId === 'string') editAccount(list.find(a => a.id === openId), load); }
     catch (e) { $('#aList', L.body).innerHTML = `<div class="err">${I.alert}<span>${esc(dbErr(e))}</span></div>`; }
   };
   $('#aq', L.body).oninput = e => { q = norm(e.target.value); if (list) draw(); };
@@ -4110,13 +4115,32 @@ function openAccounts() {
   };
   load();
 }
+/* Администратор: новый модератор (ведёт мероприятия и новости). Логин и пароль создаются сами, их можно сразу поменять. */
+function addModerator(after) {
+  const L = openSheet({ title: 'Новый модератор' });
+  L.body.innerHTML = `<label class="lbl" for="mdF">ФИО</label><input class="fld" id="mdF" maxlength="80" placeholder="Например, Иванов И.И." autocomplete="off">
+    <div class="hint">Модератор добавляет и меняет мероприятия и новости. Участников, коллективы, посещаемость, задачи и учётные записи он только смотрит или не видит вовсе.</div><div id="mdErr"></div>`;
+  L.foot.innerHTML = '<button class="btn" data-close>Отмена</button><span class="sp"></span><button class="btn pri" data-ok>Создать</button>';
+  const ok = async () => {
+    const fio = clean($('#mdF', L.body).value);
+    if (!fio) { $('#mdErr', L.body).innerHTML = `<div class="err">${I.alert}<span>Введите ФИО.</span></div>`; return; }
+    const b = $('[data-ok]', L.foot); b.disabled = true;
+    try {
+      const r = await gcall('adminAddModerator', Store.token, fio);
+      closeSheet(L); toast('Модератор добавлен');
+      after(r.id);
+    } catch (e) { $('#mdErr', L.body).innerHTML = `<div class="err">${I.alert}<span>${esc(dbErr(e))}</span></div>`; b.disabled = false; }
+  };
+  $('[data-ok]', L.foot).onclick = ok; $('#mdF', L.body).onkeydown = e => { if (e.key === 'Enter') ok(); };
+  setTimeout(() => $('#mdF', L.body).focus(), 60);
+}
 function editAccount(a, after) {
   if (!a) return;
   const L = openSheet({ title: a.fio });
   const isAdm = a.role === 'admin';
   L.body.innerHTML = `<label class="lbl" for="eaL">Логин</label><input class="fld" id="eaL" value="${esc(a.login)}" autocapitalize="off" spellcheck="false">
     <label class="lbl" for="eaP">Пароль</label><input class="fld" id="eaP" value="${esc(a.password)}" autocapitalize="off" spellcheck="false">
-    ${isAdm ? '' : `<label class="lbl" for="eaR">Роль</label><select class="fld" id="eaR"><option value="participant">Участник</option><option value="leader">Руководитель</option></select>`}
+    ${isAdm ? '' : `<label class="lbl" for="eaR">Роль</label><select class="fld" id="eaR"><option value="participant">Участник</option><option value="leader">Руководитель</option><option value="moderator">Модератор</option></select>`}
     <label class="lbl" for="eaT">Telegram</label><input class="fld" id="eaT" value="${esc(a.telegram)}" autocapitalize="off" spellcheck="false">
     <label class="lbl" for="eaM">MAX</label><div class="phone">${RU_FLAG}<input class="fld" id="eaM" type="tel" inputmode="tel" value="${esc(a.max)}" placeholder="+79999999999" maxlength="16"></div>
     <div class="hint">Уведомления: Telegram ${a.tgLinked ? (a.tgOn ? 'подключён' : 'подключён, выключен') : 'не подключён'}, MAX ${a.maxLinked ? (a.maxOn ? 'подключён' : 'подключён, выключен') : 'не подключён'}.</div>
@@ -4124,7 +4148,13 @@ function editAccount(a, after) {
     <div class="hint">После смены пароля человеку нужно будет войти заново.</div><div id="eaErr"></div>`;
   if (!isAdm) $('#eaR', L.body).value = a.role;
   phoneInput($('#eaM', L.body));
-  L.foot.innerHTML = '<button class="btn" data-close>Отмена</button><span class="sp"></span><button class="btn pri" data-ok>Сохранить</button>';
+  const own = !isAdm && !a.memberId && !a.leader; // запись, созданную вручную (модератора), можно удалить
+  L.foot.innerHTML = `${own ? '<button class="btn dng" data-del>Удалить</button>' : ''}<button class="btn" data-close>Отмена</button><span class="sp"></span><button class="btn pri" data-ok>Сохранить</button>`;
+  if (own) $('[data-del]', L.foot).onclick = async () => {
+    if (!(await confirmSheet(`Удалить учётную запись «${a.fio}»? Человек больше не сможет войти.`))) return;
+    try { await gcall('adminDeleteAccount', Store.token, a.id); closeSheet(L); toast('Учётная запись удалена'); after(); }
+    catch (e) { $('#eaErr', L.body).innerHTML = `<div class="err">${I.alert}<span>${esc(dbErr(e))}</span></div>`; }
+  };
   $('[data-ok]', L.foot).onclick = async () => {
     const d = { login: clean($('#eaL', L.body).value), password: $('#eaP', L.body).value, telegram: clean($('#eaT', L.body).value), max: phoneVal($('#eaM', L.body)) };
     if (!isAdm) d.role = $('#eaR', L.body).value;
@@ -4165,7 +4195,7 @@ function openBots() {
 
 function boot() {
   if (!hasApi()) {
-    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true, k: true }; S.canWrite = false; document.body.classList.add('ro');
+    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true, k: true }; S.canWrite = false; S.canEv = false; document.body.classList.add('ro', 'roe');
     $('#noDb').textContent = 'Это файл приложения. Он работает, когда открыт по ссылке веб-приложения Google Apps Script.';
     $('#noDb').hidden = false; setSync(false, 'Нет базы'); render(); return;
   }
