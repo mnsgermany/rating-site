@@ -565,6 +565,35 @@ body.r-participant [data-v="officials"],body.r-leader [data-addev]{display:none!
 .nev b{display:block;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nev small{display:block;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nev>svg:last-child{color:var(--muted)}
+/* лайки и комментарии */
+.soc{padding:4px 10px 10px;border-top:1px solid var(--line);margin-top:10px}
+.soc-r{display:flex;align-items:center;gap:2px;min-width:0}
+.soc-b{display:inline-flex;align-items:center;gap:6px;min-height:40px;min-width:44px;padding:0 10px;border:0;border-radius:10px;background:none;color:var(--muted);font-weight:600;font-size:14px}
+.soc-b:hover{background:var(--surface-2)}
+.soc-b svg{width:20px;height:20px}
+.soc-b.on{color:var(--danger)}
+.soc-b.on svg{fill:currentColor}
+.soc-b.lk:active svg{transform:scale(1.25)}
+.soc-b svg{transition:transform .15s}
+.soc-w{flex:1;min-width:0;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-left:4px}
+.soc-c{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:3px;width:100%;padding:2px 10px 0;font-size:13.5px;line-height:1.4}
+.soc-c>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.soc-c b{font-weight:600}
+.cml{display:flex;flex-direction:column;gap:14px}
+.cm{display:flex;gap:10px;align-items:flex-start}
+.cm .ava{flex:none}
+.cm-b{min-width:0;flex:1}
+.cm-h b{font-weight:600;font-size:14px;margin-right:6px}
+.cm-h small{color:var(--muted);font-size:12px}
+.cm-t{margin-top:2px;font-size:14.5px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere}
+.cm-t a{color:var(--accent)}
+.cm-a{display:flex;gap:14px;margin-top:4px}
+.cm-a button{border:0;background:none;padding:4px 0;color:var(--muted);font-size:13px;font-weight:500}
+.cm-a button:hover{color:var(--accent)}
+.cm-a button[data-cdel]:hover{color:var(--danger)}
+.cm-in{flex:1 1 100%;min-width:0}
+.cm-in .fld{resize:vertical;min-height:44px}
+.cm-in .hint{margin:0 0 6px}
 @media (max-width:380px){.fd-add span{display:none}.fd-add{padding:0 11px}}
 .cab-hero{margin:0 0 16px}
 .hero-s{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
@@ -845,6 +874,12 @@ button.fi:active{transform:scale(.995)}
 .wp .av{background:conic-gradient(from 210deg,var(--fire1),var(--fire2),var(--fire3),var(--fire1))}
 .chip.hot{background:linear-gradient(90deg,var(--fire3),var(--fire2))}
 .chip.hot svg{fill:#FFD25E;stroke:#FFD25E}
+/* кнопки-фильтры в формах: правило .chip для обложек ленты выше не должно их перекрашивать */
+.sug .chip{background:var(--surface);color:var(--ink);border:1px solid var(--line);backdrop-filter:none;-webkit-backdrop-filter:none;padding:7px 13px;font-size:14px;font-weight:500;white-space:normal}
+.sug .chip:hover{border-color:var(--accent)}
+.sug .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+#tMode{display:flex;width:max-content}
+@media (max-width:560px){#tMode{width:100%}#tMode button{flex:1 1 0;white-space:normal;line-height:1.2;padding:6px 6px;font-size:13px}}
 .fn.pin{background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(135deg,var(--fire1),var(--fire2),var(--fire3)) border-box}
 .fd-end span svg{color:var(--fire2)}
 .fd-fb{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 16px 22px;text-align:center}
@@ -946,6 +981,7 @@ body{background:radial-gradient(900px 420px at 92% -120px,color-mix(in srgb,var(
 .heat{display:inline-block;width:56px;height:6px;border-radius:6px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;flex:none}
 .heat>i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--fire1),var(--fire2),var(--fire3))}
 .heat.wide{display:block;width:auto;height:8px}
+.heat.att>i{background:linear-gradient(90deg,color-mix(in srgb,var(--good) 55%,transparent),var(--good))}
 @media (max-width:760px){.rate .heat{width:40px}}
 /* подвал */
 #buildTag{position:relative;padding-top:18px!important}
@@ -1190,10 +1226,10 @@ body{background:radial-gradient(900px 420px at 92% -120px,color-mix(in srgb,var(
 
   <section class="view" id="v-teams" hidden>
     <div class="vh">
-      <div><h1>Коллективы</h1><p>Рейтинг коллективов: баллы всех участников. Нажмите «Участники», чтобы увидеть состав</p></div>
+      <div><h1>Коллективы</h1><p id="tModeP">Рейтинг коллективов: баллы всех участников. Нажмите «Участники», чтобы увидеть состав</p></div>
       <div class="acts"><button class="btn pri" id="bAddT" data-w><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Добавить коллектив</button></div>
     </div>
-    <div class="seg" id="tMode" role="group" aria-label="Как считать рейтинг коллективов"><button type="button" data-tmode="sum" aria-pressed="true">Сумма баллов</button><button type="button" data-tmode="avg" aria-pressed="false">В среднем на участника</button></div>
+    <div class="seg" id="tMode" role="group" aria-label="Как считать рейтинг коллективов"><button type="button" data-tmode="sum" aria-pressed="true">Сумма баллов</button><button type="button" data-tmode="avg" aria-pressed="false">В среднем на участника</button><button type="button" data-tmode="att" aria-pressed="false">Посещаемость, %</button></div>
     <div id="tList" class="tms"></div>
   </section>
 
@@ -1262,7 +1298,7 @@ const DEF_RULES = {
 };
 const DEF_LEVEL = ['Внутреннее', 'Городское', 'Региональное', 'Всероссийское', 'Международное'];
 
-const S = { db: null, canWrite: true, canEv: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], adjust: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false, j: false },
+const S = { db: null, canWrite: true, canEv: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], adjust: [], likes: [], comments: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false, j: false, lk: false, cm: false },
   view: 'feed', feedN: 12, teamMode: 'sum', sort: { key: 'rating', dir: 'desc' }, q: '', team: '', eq: '', ratings: new Map(), places: new Map() };
 
 /* ---------- toast ---------- */
@@ -2177,11 +2213,12 @@ function renderTeams() {
   if (!S.teams.length) { el.style.display = 'block'; el.innerHTML = `<div class="card"><div class="empty"><div class="eic">${I.shield}</div><h3>Коллективов пока нет</h3><p>Создайте коллектив здесь или прямо при добавлении участника.</p><div data-w style="margin-top:6px"><button class="btn pri" data-act="addteam">Добавить коллектив</button></div></div></div>`; return; }
   el.style.display = '';
   const mine = new Set(myTeams().map(t => t.id)), mode = S.teamMode;
-  const rows = mineFirst(teamStandings(mode), r => r.t.id), hiT = Math.max(1, ...rows.map(r => mode === 'avg' ? r.avg : r.sum));
+  const rows = mode === 'att' ? teamStandings(mode) : mineFirst(teamStandings(mode), r => r.t.id), hiT = mode === 'att' ? 100 : Math.max(1, ...rows.map(r => tKey(r, mode)));
   el.innerHTML = rows.map(r => `<div class="card tm${mine.has(r.t.id) ? ' mine' : ''}">
     ${mine.has(r.t.id) ? `<span class="mytag">Ваш коллектив</span>` : ''}<div class="row">${r.place && r.place <= 3 ? `<span class="medal m${r.place}">${r.place}</span>` : `<span class="tpl num">${r.place || '–'}</span>`}<h3>${esc(r.t.name)}</h3>${r.week > 0 ? `<span class="gp num" title="Рост суммы баллов за 7 дней">+${fmtN(r.week)} за неделю</span>` : ''}</div>
-    <div class="kv k4"><div><b>${r.n}</b><span>${plural(r.n, 'участник', 'участника', 'участников')}</span></div><div><b>${fmtN(r.sum)}</b><span>сумма баллов</span></div><div><b>${fmtN(Math.round(r.avg * 10) / 10)}</b><span>в среднем</span></div><div><b>${r.att == null ? '—' : r.att + '%'}</b><span>явка за 30 дней</span></div></div>
-    <div class="heat wide" title="Сравнение с лидером"><i style="width:${Math.round((mode === 'avg' ? r.avg : r.sum) / hiT * 100)}%"></i></div>
+    <div class="kv k4"><div><b>${r.n}</b><span>${plural(r.n, 'участник', 'участника', 'участников')}</span></div><div><b>${fmtN(r.sum)}</b><span>сумма баллов</span></div><div><b>${fmtN(Math.round(r.avg * 10) / 10)}</b><span>в среднем</span></div><div><b>${r.att == null ? '—' : r.att + '%'}</b><span>посещаемость за ${ATT_DAYS} дней</span></div></div>
+    <div class="heat wide${mode === 'att' ? ' att' : ''}" title="${mode === 'att' ? 'Посещаемость' : 'Сравнение с лидером'}"><i style="width:${Math.max(0, Math.round(tKey(r, mode) / hiT * 100))}%"></i></div>
+    ${mode === 'att' ? `<div class="hint" style="margin:0">${r.attLes ? `Пришли <b style="color:var(--ink)">${r.attGot}</b> из ${r.attNeed} ${plural(r.attNeed, 'возможного посещения', 'возможных посещений', 'возможных посещений')} · ${r.attLes} ${plural(r.attLes, 'занятие', 'занятия', 'занятий')} за ${ATT_DAYS} дней` : `За ${ATT_DAYS} дней нет отмеченных занятий`}</div>` : ''}
     ${r.best && (S.ratings.get(r.best.id)?.total || 0) > 0 ? `<div class="hint" style="margin:0">Лучший: <b style="color:var(--ink)">${esc(r.best.fio)}</b></div>` : ''}
     ${r.t.leader || schedOf(r.t).length ? `<div class="hint" style="margin:0">${r.t.leader ? `Руководитель: ${(u => u ? avaHtml(u, r.t.leader, 's') : '')(avaOfLeader(r.t.leader))}<b style="color:var(--ink)">${esc(r.t.leader)}</b>` : ''}${r.t.leader && schedOf(r.t).length ? '<br>' : ''}${esc(schedOf(r.t).map(slotTxt).join(', '))}</div>` : ''}
     <div class="row"><button class="btn" data-show="${r.t.id}">${I.users}Участники</button>${canTasks(r.t) ? (n => `<button class="btn" data-tasks="${r.t.id}">${I.task}Задачи${n ? `<span class="tk-n num" title="Не выполнено">${n}</span>` : ''}</button>`)(teamTasks(r.t.id).filter(x => pctOf(x) < 100).length) : ''}<span><button class="ib" data-att="${r.t.id}" aria-label="Посещаемость" title="Посещаемость">${I.check}</button><button class="ib" data-w data-ren="${r.t.id}" aria-label="Переименовать">${I.edit}</button><button class="ib" data-w data-delt="${r.t.id}" aria-label="Удалить">${I.trash}</button></span></div></div>`).join('');
@@ -3446,22 +3483,44 @@ function heroMember(mid) {
     <div class="hero-n"><span>${g.place === 1 ? 'Вы первый в рейтинге. Держите планку!' : `До ${g.target}-го места <b class="num">${fmtN(g.gap)}</b> ${bal(g.gap)}`}</span>
       <span>${g.week > 0 ? `<span class="hero-hot">${I.flame}</span><b class="num">+${fmtN(g.week)}</b> за неделю` : 'за неделю без новых баллов'}</span></div></section>`;
 }
-/* Рейтинг коллективов: сумма (или среднее) баллов участников, рост за неделю, явка за 30 дней. */
+/* Посещаемость коллектива в процентах за 30 дней: сколько раз пришли из всех возможных посещений
+ * (участники коллектива × отмеченные занятия). Так большой и маленький коллектив сравниваются честно.
+ * Пропуск по уважительной причине не считается, занятия без единой отметки тоже; кто добавлен в базу
+ * после занятия и не отмечен на нём, на это занятие не считается. */
+const ATT_DAYS = 30;
+function teamAtt(t, ms) {
+  const fromD = ymdOf(Date.now() - ATT_DAYS * 86400000), today = ymdOf(Date.now());
+  let got = 0, need = 0, les = 0;
+  S.sessions.forEach(q => {
+    const d = String(q.date || '');
+    if (q.teamId !== t.id || d < fromD || d > today) return;
+    const mk = q.marks || {};
+    if (!Object.values(mk).some(Boolean)) return;
+    les++;
+    ms.forEach(m => {
+      const v = mk[m.id] || '', at = Number(m.createdAt) || 0;
+      if (!v && at && ymdOf(at) > d) return;
+      if (v === 'e') return;
+      need++; if (v === 'p') got++;
+    });
+  });
+  return { att: need ? Math.round(got / need * 100) : null, attGot: got, attNeed: need, attLes: les };
+}
+/* Рейтинг коллективов: сумма (или среднее) баллов участников, рост за неделю, посещаемость в процентах. */
+const tKey = (r, mode) => mode === 'avg' ? r.avg : mode === 'att' ? (r.att == null ? -1 : r.att) : r.sum;
 function teamStandings(mode = 'sum') {
-  const w = weekAgo(), fromD = ymdOf(Date.now() - 30 * 86400000);
+  const w = weekAgo();
   const rows = S.teams.map(t => {
     const ms = S.members.filter(m => inTeam(m, t.id));
     const sum = r2(ms.reduce((s, m) => s + ((S.ratings.get(m.id) || {}).total || 0), 0));
     const was = ms.reduce((s, m) => s + (w.tot.get(m.id) || 0), 0);
-    let p = 0, n = 0;
-    S.sessions.forEach(q => { if (q.teamId !== t.id || String(q.date) < fromD) return; Object.values(q.marks || {}).forEach(v => { if (v) { n++; if (v === 'p') p++; } }); });
     const best = ms.slice().sort((a, b) => ((S.ratings.get(b.id) || {}).total || 0) - ((S.ratings.get(a.id) || {}).total || 0))[0];
-    return { t, n: ms.length, sum, avg: ms.length ? r2(sum / ms.length) : 0, week: r2(sum - was), att: n ? Math.round(p / n * 100) : null, best };
+    return { t, n: ms.length, sum, avg: ms.length ? r2(sum / ms.length) : 0, week: r2(sum - was), best, ...teamAtt(t, ms) };
   });
-  const key = r => mode === 'avg' ? r.avg : r.sum;
-  rows.sort((a, b) => key(b) - key(a) || coll.compare(a.t.name, b.t.name));
+  const key = r => tKey(r, mode);
+  rows.sort((a, b) => key(b) - key(a) || (mode === 'att' ? b.attNeed - a.attNeed : 0) || coll.compare(a.t.name, b.t.name));
   let pl = 0, last = null;
-  rows.forEach((r, i) => { const k = key(r); if (k !== last) { pl = i + 1; last = k; } r.place = k > 0 ? pl : 0; });
+  rows.forEach((r, i) => { const k = key(r); if (k !== last) { pl = i + 1; last = k; } r.place = (mode === 'att' ? k >= 0 && r.attNeed : k > 0) ? pl : 0; });
   return rows;
 }
 /* Коллективы, которые касаются вошедшего: участника — его, руководителя — которыми он руководит. */
@@ -3613,7 +3672,7 @@ function feedEv(e, ts) {
     <div class="fi-k"><span class="ic">${I.cup}</span><b>${ps.length ? 'Итоги' : 'Фото'}</b>${ps.length ? `<span class="num">${ps.length} ${plural(ps.length, 'участник', 'участника', 'участников')} · ${fmtN(total)} ${bal(total)}</span>` : ''}<time>${hm(ts)}</time></div>
     ${rows.length ? podium(rows, ps, mine) : ''}
     ${mine && !rows.includes(mine) ? `<div class="myp">${avaHtml(avaOfMember(mine.m), mine.m.fio)}<span>Вы · ${esc(partLabel(mine.p))}</span><b>${mine.pts > 0 ? '+' : ''}${fmtN(mine.pts)}</b></div>` : ''}
-    <div class="fi-f2">${others.length ? `<span class="avs">${others.slice(0, 5).map(x => avaHtml(avaOfMember(x.m), x.m.fio)).join('')}</span><span class="num">${others.length > 5 ? '+' + (others.length - 5) : ''}</span>` : ''}<span class="go">Открыть${I.right}</span></div></article>`;
+    <div class="fi-f2">${others.length ? `<span class="avs">${others.slice(0, 5).map(x => avaHtml(avaOfMember(x.m), x.m.fio)).join('')}</span><span class="num">${others.length > 5 ? '+' + (others.length - 5) : ''}</span>` : ''}<span class="go">Открыть${I.right}</span></div>${socBar('e:' + e.id)}</article>`;
 }
 function feedJoin(ms, ts) {
   const n = ms.length, teams = [...new Set(ms.flatMap(mTeams).map(teamName).filter(Boolean))];
@@ -3664,7 +3723,7 @@ let feedSig = [];
 function renderFeed() {
   const el = $('#feedBody');
   if (!S.ready.m || !S.ready.e) { el.innerHTML = '<div class="fd-sk"></div><div class="fd-sk"></div><div class="fd-sk"></div>'; feedSig = []; return; }
-  const sig = [S.events, S.members, S.sessions, S.teams, S.news, S.canEv, Auth.me, Auth.av, S.feedN, ymdOf(Date.now()), Math.floor(Date.now() / 60000)];
+  const sig = [S.events, S.members, S.sessions, S.teams, S.news, S.likes, S.comments, S.canEv, Auth.me, Auth.av, S.feedN, ymdOf(Date.now()), Math.floor(Date.now() / 60000)];
   if (sig.length === feedSig.length && sig.every((v, i) => v === feedSig[i])) return;
   feedSig = sig;
   const me = Auth.me, role = me ? me.role : '', h = new Date().getHours(), now = new Date();
@@ -3760,6 +3819,8 @@ async function feedHydrate(root) {
   $$('.gal-s:first-child img[data-full]', root).forEach(im => { if (!fullMem.has(im.dataset.full)) feedIo.observe(im); });
 }
 function feedAct(t) {
+  const lk = t.closest('[data-like]'); if (lk) { toggleLike(lk.dataset.like); return true; }
+  const cm = t.closest('[data-cmt]'); if (cm) { commentsSheet(cm.dataset.cmt); return true; }
   if (t.closest('[data-more]')) { S.feedN += 12; renderFeed(); return true; }
   if (t.closest('[data-nadd]')) { newsSheet(null); return true; }
   if (t.closest('[data-fb]')) { feedbackSheet(); return true; }
@@ -3782,7 +3843,9 @@ $('#feedBody').addEventListener('scroll', e => { const g = e.target.closest && e
 $('#feedBody').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role="button"]')) { e.preventDefault(); feedAct(e.target); } });
 $('#tMode').addEventListener('click', e => {
   const b = e.target.closest('[data-tmode]'); if (!b) return;
-  S.teamMode = b.dataset.tmode; $$('[data-tmode]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderTeams();
+  S.teamMode = b.dataset.tmode; $$('[data-tmode]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  $('#tModeP').textContent = S.teamMode === 'att' ? `Посещаемость за ${ATT_DAYS} дней: сколько раз пришли из всех возможных посещений (участники × занятия). Размер коллектива не важен, уважительные пропуски не считаются` : 'Рейтинг коллективов: баллы всех участников. Нажмите «Участники», чтобы увидеть состав';
+  renderTeams(); fireBanner();
 });
 
 
@@ -3812,7 +3875,97 @@ function feedNews(n, ts, pinned) {
     <div class="fi-h">${av ? avaHtml(av, n.author) : `<span class="ic">${I.news}</span>`}<div><b>${esc(n.author || 'Новость')}</b><small>Новость · ${pinned ? dayLabel(ts).toLowerCase() : agoTxt(ts)}</small></div>${S.canEv && S.db ? `<button class="ib" type="button" data-nedit="${esc(n.id)}" aria-label="Изменить новость">${I.dots}</button>` : ''}</div>
     ${ph.length ? mosaic(ph, own.length ? 'n:' + n.id : e.id) : ''}
     <div class="fi-b">${n.title ? `<h3>${esc(n.title)}</h3>` : ''}${n.text ? `<div class="nt${long ? ' clamp' : ''}">${newsBody(n.text)}</div>${long ? '<button class="nmore" type="button" data-nmore>Читать дальше</button>' : ''}` : ''}
-    ${e ? `<button class="nev" type="button" data-ev="${esc(e.id)}"><span class="ic">${I.cup}</span><span style="min-width:0;flex:1"><b>${esc(e.title)}</b><small>${esc([e.level, e.date && fmtD(e.date), (e.participants || []).length ? (e.participants || []).length + ' ' + plural((e.participants || []).length, 'участник', 'участника', 'участников') : ''].filter(Boolean).join(' · '))}</small></span>${I.right}</button>` : ''}</div></article>`;
+    ${e ? `<button class="nev" type="button" data-ev="${esc(e.id)}"><span class="ic">${I.cup}</span><span style="min-width:0;flex:1"><b>${esc(e.title)}</b><small>${esc([e.level, e.date && fmtD(e.date), (e.participants || []).length ? (e.participants || []).length + ' ' + plural((e.participants || []).length, 'участник', 'участника', 'участников') : ''].filter(Boolean).join(' · '))}</small></span>${I.right}</button>` : ''}</div>${socBar('n:' + n.id)}</article>`;
+}
+/* ---------- Лайки и комментарии к новостям и мероприятиям ленты ----------
+ * Ставят и пишут все вошедшие. Свой комментарий можно изменить или удалить,
+ * модератор и администратор меняют и удаляют любые. target: «n:<ID новости>» или «e:<ID мероприятия>». */
+Object.assign(I, { heart: '<svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0112 7.3 4.3 4.3 0 0119.5 10c0 5.4-7.5 10-7.5 10z"/></svg>' });
+let socMemo = null;
+function socIdx() {
+  if (socMemo && socMemo.l === S.likes && socMemo.c === S.comments) return socMemo;
+  const lk = new Map(), cm = new Map(), add = (m, k, x) => { if (!m.has(k)) m.set(k, []); m.get(k).push(x); };
+  S.likes.forEach(x => add(lk, x.target, x));
+  S.comments.forEach(x => add(cm, x.target, x));
+  cm.forEach(v => v.sort((a, b) => (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0)));
+  return (socMemo = { l: S.likes, c: S.comments, lk, cm });
+}
+const canSoc = () => !!(Auth.me && S.db && hasApi());
+const canEditCm = c => !!Auth.me && (c.authorId === Auth.me.id || Auth.me.role === 'moderator' || Auth.me.role === 'admin');
+const likeWho = lk => { const n = lk.map(x => x.authorId === (Auth.me && Auth.me.id) ? 'Вы' : shortFio(x.author || '')).filter(Boolean); return n.length > 8 ? n.slice(0, 8).join(', ') + ` и ещё ${n.length - 8}` : n.join(', '); };
+function socBar(tg) {
+  if (!canSoc()) return '';
+  const ix = socIdx(), lk = ix.lk.get(tg) || [], cm = ix.cm.get(tg) || [], mine = lk.some(x => x.authorId === Auth.me.id);
+  const last = cm.slice(-2);
+  return `<div class="soc"><div class="soc-r"><button class="soc-b lk${mine ? ' on' : ''}" type="button" data-like="${esc(tg)}" aria-pressed="${mine}" aria-label="Нравится">${I.heart}<span class="num">${lk.length || ''}</span></button>
+    <button class="soc-b" type="button" data-cmt="${esc(tg)}" aria-label="Комментарии">${I.chat}<span class="num">${cm.length || ''}</span></button>${lk.length ? `<span class="soc-w">${esc(likeWho(lk))}</span>` : ''}</div>
+    ${last.length ? `<button class="soc-c" type="button" data-cmt="${esc(tg)}">${cm.length > 2 ? `<span class="muted">Все комментарии (${cm.length})</span>` : ''}${last.map(c => `<span><b>${esc(shortFio(c.author || ''))}</b> ${esc(String(c.text || '').slice(0, 160))}</span>`).join('')}</button>` : ''}</div>`;
+}
+const likeBusy = new Set();
+async function toggleLike(tg) {
+  if (!canSoc()) { toast('Войдите, чтобы ставить лайки'); return; }
+  if (likeBusy.has(tg)) return;
+  const id = tg + '~' + Auth.me.id, had = Store.data.likes.some(x => x.id === id);
+  likeBusy.add(tg);
+  /* сразу показываем результат, сервер подтвердит */
+  Store.data.likes = had ? Store.data.likes.filter(x => x.id !== id) : Store.data.likes.concat([{ id, target: tg, authorId: Auth.me.id, author: Auth.me.fio, createdAt: Date.now() }]);
+  emit('likes');
+  try { await (had ? S.db.doc('likes/' + id).delete() : S.db.doc('likes/' + id).set({ target: tg })); }
+  catch (e) { toast(dbErr(e)); poll(); }
+  finally { likeBusy.delete(tg); }
+}
+let cmOpen = null;
+function commentsSheet(tg) {
+  if (!canSoc()) { toast('Войдите, чтобы комментировать'); return; }
+  const [k, oid] = [tg.slice(0, 1), tg.slice(2)];
+  const own = k === 'n' ? S.news.find(x => x.id === oid) : S.events.find(x => x.id === oid);
+  const L = openSheet({ title: own ? (own.title || 'Комментарии') : 'Комментарии' });
+  let edit = null;
+  L.body.innerHTML = '<div id="cmL" class="cml"></div>';
+  L.foot.innerHTML = `<div class="cm-in"><div id="cmEd" class="hint" hidden></div><textarea class="fld" id="cmX" rows="2" maxlength="1000" placeholder="Написать комментарий"></textarea><div id="cmErr"></div></div><button class="btn" data-cancel hidden>Отмена</button><button class="btn pri" data-send>Отправить</button>`;
+  const ta = $('#cmX', L.foot), sendB = $('[data-send]', L.foot), cancelB = $('[data-cancel]', L.foot);
+  const err = m => { $('#cmErr', L.foot).innerHTML = m ? `<div class="err">${I.alert}<span>${esc(m)}</span></div>` : ''; };
+  const draw = () => {
+    const list = socIdx().cm.get(tg) || [];
+    $('#cmL', L.body).innerHTML = !list.length ? '<div class="hint" style="margin:0">Комментариев пока нет. Напишите первым!</div>' : list.map(c => `<div class="cm">
+      ${avaHtml(Auth.av['a:' + c.authorId] || '', c.author)}<div class="cm-b"><div class="cm-h"><b>${esc(c.author || '')}</b><small>${esc(agoTxt(Number(c.createdAt) || 0))}${c.updatedAt ? ` · изменён${c.editedBy ? ' (' + esc(c.editedBy) + ')' : ''}` : ''}</small></div>
+      <div class="cm-t">${newsBody(c.text)}</div>${canEditCm(c) ? `<div class="cm-a"><button type="button" data-ced="${esc(c.id)}">Изменить</button><button type="button" data-cdel="${esc(c.id)}">Удалить</button></div>` : ''}</div></div>`).join('');
+  };
+  const setEdit = c => {
+    edit = c || null;
+    $('#cmEd', L.foot).hidden = !edit; $('#cmEd', L.foot).textContent = edit ? `Изменение комментария: ${edit.author || ''}` : '';
+    cancelB.hidden = !edit; sendB.textContent = edit ? 'Сохранить' : 'Отправить';
+    ta.value = edit ? edit.text : ''; err('');
+    if (edit) ta.focus();
+  };
+  cmOpen = draw;
+  const prev = L.onClose; L.onClose = () => { if (cmOpen === draw) cmOpen = null; if (prev) prev(); };
+  draw();
+  setTimeout(() => { const l = $('#cmL', L.body); if (l.lastElementChild) l.lastElementChild.scrollIntoView({ block: 'end' }); }, 60);
+  cancelB.onclick = () => setEdit(null);
+  $('#cmL', L.body).addEventListener('click', async e => {
+    const ed = e.target.closest('[data-ced]'), dl = e.target.closest('[data-cdel]');
+    if (ed) setEdit(S.comments.find(x => x.id === ed.dataset.ced));
+    if (dl) {
+      if (!(await confirmSheet('Удалить комментарий?'))) return;
+      try { await S.db.doc('comments/' + dl.dataset.cdel).delete(); if (edit && edit.id === dl.dataset.cdel) setEdit(null); toast('Комментарий удалён'); }
+      catch (x) { toast(dbErr(x)); }
+    }
+  });
+  const send = async () => {
+    const v = String(ta.value || '').trim();
+    if (!v) { ta.focus(); return; }
+    sendB.disabled = true; err('');
+    try {
+      if (edit) await S.db.doc('comments/' + edit.id).update({ text: v });
+      else await S.db.collection('comments').doc().set({ target: tg, text: v });
+      setEdit(null);
+      const l = $('#cmL', L.body); if (l.lastElementChild) l.lastElementChild.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    } catch (x) { err(dbErr(x)); }
+    finally { sendB.disabled = false; }
+  };
+  sendB.onclick = send;
+  ta.onkeydown = e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); } };
 }
 /* Обратная связь: сообщение уходит администратору в Telegram или MAX и сохраняется в листе «Обратная связь». */
 function feedbackSheet() {
@@ -4145,12 +4298,12 @@ function fbData(v) {
   }
   if (v === 'teams') {
     const st = teamStandings(S.teamMode || 'sum'), uniq = new Set(S.members.filter(m => mTeams(m).length).map(m => m.id)).size;
-    const at = st.filter(r => r.att != null), att = at.length ? Math.round(at.reduce((s, r) => s + r.att, 0) / at.length) : null;
+    const at = st.filter(r => r.att != null), att = at.length ? Math.round(at.reduce((s, r) => s + r.attGot, 0) / Math.max(1, at.reduce((s, r) => s + r.attNeed, 0)) * 100) : null;
     const mine = new Set(myTeams().map(t => t.id)), my = st.find(r => mine.has(r.t.id));
     const k = [{ v: S.teams.length, l: plural(S.teams.length, 'коллектив', 'коллектива', 'коллективов') }, { v: uniq, l: 'участников в коллективах' }, { v: allPts, l: 'баллов всего', hot: 1 }];
-    k.push(my && my.place ? { v: my.place + '-е', l: 'место: ' + my.t.name, hot: 1 } : { v: att == null ? '—' : att + '%', l: 'средняя явка за 30 дней' });
-    const top = st.filter(r => (S.teamMode === 'avg' ? r.avg : r.sum) > 0).slice(0, 3), mx = Math.max(1, ...top.map(r => S.teamMode === 'avg' ? r.avg : r.sum));
-    const col = (r, i) => r ? `<div class="p${i + 1}"><small>${esc(r.t.name)}</small><em style="height:${Math.max(26, Math.round((S.teamMode === 'avg' ? r.avg : r.sum) / mx * 78))}px">${fmtN(S.teamMode === 'avg' ? r.avg : r.sum)}</em></div>` : '<div></div>';
+    k.push(my && my.place ? { v: my.place + '-е', l: 'место: ' + my.t.name, hot: 1 } : { v: att == null ? '—' : att + '%', l: 'посещаемость за ' + ATT_DAYS + ' дней' });
+    const md = S.teamMode || 'sum', top = st.filter(r => r.place && tKey(r, md) > 0).slice(0, 3), mx = md === 'att' ? 100 : Math.max(1, ...top.map(r => tKey(r, md)));
+    const col = (r, i) => r ? `<div class="p${i + 1}"><small>${esc(r.t.name)}</small><em style="height:${Math.max(26, Math.round(tKey(r, md) / mx * 78))}px">${md === 'att' ? r.att + '%' : fmtN(tKey(r, md))}</em></div>` : '<div></div>';
     return { k, g: top.length ? `<div class="fg-h">Пьедестал коллективов</div><div class="pdm">${col(top[1], 1)}${col(top[0], 0)}${col(top[2], 2)}</div>` : '' };
   }
   if (v === 'officials') {
@@ -4233,7 +4386,7 @@ async function holdLock(L, key) {
   return { ok: true };
 }
 window.addEventListener('pagehide', () => { layers.slice().forEach(L => { if (L.onClose) { try { L.onClose(); } catch (e) {} L.onClose = null; } }); });
-const Store = { locks: {}, ver: null, data: { members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], adjust: [] }, subs: {}, token: lsGet('reiting_tok'), timer: 0, fails: 0 };
+const Store = { locks: {}, ver: null, data: { members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], adjust: [], likes: [], comments: [] }, subs: {}, token: lsGet('reiting_tok'), timer: 0, fails: 0 };
 /* ---------- кэш в браузере (IndexedDB): база, профиль, аватары, фото ----------
  * Ссылка открывается сразу с данными прошлого визита, а сервер лишь подтверждает, что они свежие.
  * Миниатюры и фото хранятся здесь же: файлы на Диске не меняются, поэтому повторно не скачиваются.
@@ -4291,7 +4444,7 @@ function applyState(st) {
   Store.ver = st.version;
   if (st.role && Auth.me && st.role !== Auth.me.role) refreshMe();
   /* после сохранения сервер присылает только изменённые разделы */
-  const keys = st.partial ? Object.keys(st.data || {}) : ['members', 'teams', 'events', 'officials', 'sessions', 'settings', 'news', 'tasks', 'adjust'];
+  const keys = st.partial ? Object.keys(st.data || {}) : ['members', 'teams', 'events', 'officials', 'sessions', 'settings', 'news', 'tasks', 'adjust', 'likes', 'comments'];
   for (const k of keys) { Store.data[k] = st.data[k] || []; emit(k); }
   saveState();
   if (keys.includes('events')) thPrefetchSoon();
@@ -4521,19 +4674,21 @@ function openCabinet(opt = {}) {
 /* Администратор: все учётные записи с логинами и паролями. */
 function openAccounts() {
   const L = openSheet({ title: 'Учётные записи', wide: true });
-  let list = null, q = '';
-  L.body.innerHTML = `<div class="hint" style="margin:0 0 10px">Логины и пароли видит только администратор. Участникам и руководителям коллективов они создаются автоматически, модераторов добавляете вы. Модератор ведёт мероприятия и новости, остальное только смотрит. Пароли лежат открытым текстом в листе «Учётные записи», поэтому доступ к самой Google Таблице должен быть только у администратора.</div>
-    <div class="row2" style="margin:0 0 10px"><button class="btn sm" type="button" data-bots>Боты уведомлений (токены Telegram и MAX)</button><button class="btn sm" type="button" data-visl>${I.eye}Кто заходил</button><button class="btn sm" type="button" data-addmod>${I.plus}Добавить модератора</button></div>
+  let list = null, q = '', grp = '';
+  L.body.innerHTML = `<div class="hint" style="margin:0 0 10px">Логины и пароли видит только администратор. Участникам и руководителям коллективов они создаются автоматически, остальных добавляете вы кнопкой «Добавить пользователя». Чтобы перевести человека в другую группу, нажмите на него. ${GROUP_HINT} Пароли лежат открытым текстом в листе «Учётные записи», поэтому доступ к самой Google Таблице должен быть только у администратора.</div>
+    <div class="row2" style="margin:0 0 10px"><button class="btn sm pri" type="button" data-addacc>${I.plus}Добавить пользователя</button><button class="btn sm" type="button" data-bots>Боты уведомлений (токены Telegram и MAX)</button><button class="btn sm" type="button" data-visl>${I.eye}Кто заходил</button></div>
     <div class="bar"><label class="search">${I.search}<input id="aq" type="search" placeholder="Поиск по ФИО или логину" autocomplete="off"></label></div>
+    <div class="sug" id="aGrp" role="group" aria-label="Группа" style="margin:0 0 10px"></div>
     <div id="aList"><div class="skel"></div><div class="skel"></div></div>`;
   L.foot.innerHTML = '<button class="btn" data-xl>Скачать Excel</button><span class="sp"></span><button class="btn pri" data-close>Готово</button>';
   $('[data-bots]', L.body).onclick = () => openBots();
   $('[data-visl]', L.body).onclick = () => openVisits();
-  $('[data-addmod]', L.body).onclick = () => addModerator(load);
-  const rows = () => (list || []).filter(a => !q || norm([a.fio, a.login, a.telegram, a.max].join(' ')).includes(q))
+  $('[data-addacc]', L.body).onclick = () => addAccount(load);
+  const rows = () => (list || []).filter(a => (!grp || a.role === grp) && (!q || norm([a.fio, a.login, a.telegram, a.max].join(' ')).includes(q)))
     .sort((a, b) => (ROLE_ORDER[a.role] - ROLE_ORDER[b.role]) || coll.compare(a.fio, b.fio));
   const draw = () => {
-    const f = rows();
+    const f = rows(), cnt = r => (list || []).filter(a => !r || a.role === r).length;
+    $('#aGrp', L.body).innerHTML = ['', 'admin', 'moderator', 'leader', 'participant'].map(r => `<button class="chip" type="button" data-grp="${r}" aria-pressed="${grp === r}">${r ? GROUP_PL[r] : 'Все'} · ${cnt(r)}</button>`).join('');
     $('#aList', L.body).innerHTML = !f.length ? '<div class="hint">Никого не нашли.</div>' : `<div class="accl">${f.map(a => `<button class="accr" type="button" data-acc="${esc(a.id)}"><span class="nm"><b>${esc(a.fio)}</b><small>${esc([ROLE_RU[a.role], (a.telegram || a.tgLinked) && 'TG ' + (a.telegram || '') + (a.tgLinked ? ' ✓' : ''), (a.max || a.maxLinked) && 'MAX ' + (a.max || '') + (a.maxLinked ? ' ✓' : '')].filter(Boolean).join(' · '))}</small></span><span class="cr"><span>${esc(a.login)}</span><span class="muted">${esc(a.password)}</span></span></button>`).join('')}</div>`;
   };
   const load = async openId => {
@@ -4541,6 +4696,7 @@ function openAccounts() {
     catch (e) { $('#aList', L.body).innerHTML = `<div class="err">${I.alert}<span>${esc(dbErr(e))}</span></div>`; }
   };
   $('#aq', L.body).oninput = e => { q = norm(e.target.value); if (list) draw(); };
+  $('#aGrp', L.body).addEventListener('click', e => { const b = e.target.closest('[data-grp]'); if (b) { grp = b.dataset.grp; draw(); } });
   $('#aList', L.body).addEventListener('click', e => { const b = e.target.closest('[data-acc]'); if (b && list) editAccount(list.find(a => a.id === b.dataset.acc), load); });
   $('[data-xl]', L.foot).onclick = async () => {
     if (!list || !(await needXlsx())) return;
@@ -4550,40 +4706,64 @@ function openAccounts() {
   };
   load();
 }
-/* Администратор: новый модератор (ведёт мероприятия и новости). Логин и пароль создаются сами, их можно сразу поменять. */
-function addModerator(after) {
-  const L = openSheet({ title: 'Новый модератор' });
-  L.body.innerHTML = `<label class="lbl" for="mdF">ФИО</label><input class="fld" id="mdF" maxlength="80" placeholder="Например, Иванов И.И." autocomplete="off">
-    <div class="hint">Модератор добавляет и меняет мероприятия и новости. Участников, коллективы, посещаемость, задачи и учётные записи он только смотрит или не видит вовсе.</div><div id="mdErr"></div>`;
+/* Группы пользователей: что может каждая. Группу назначает администратор. */
+const GROUP_PL = { admin: 'Администраторы', moderator: 'Модераторы', leader: 'Руководители', participant: 'Участники' };
+const GROUP_DESC = { participant: 'смотрит рейтинг, ставит лайки и комментирует', leader: 'ведёт свои коллективы: участники, посещаемость, задачи, баллы',
+  moderator: 'ведёт мероприятия и новости, правит и удаляет любые комментарии', admin: 'может всё, в том числе учётные записи и группы' };
+const GROUP_HINT = 'Участник ' + GROUP_DESC.participant + '. Руководитель ' + GROUP_DESC.leader + '. Модератор ' + GROUP_DESC.moderator + '. Администратор ' + GROUP_DESC.admin + '.';
+const groupSelect = (id, val, dis) => `<select class="fld" id="${id}"${dis ? ' disabled' : ''}>${['participant', 'leader', 'moderator', 'admin'].map(r => `<option value="${r}"${r === val ? ' selected' : ''}>${ROLE_RU[r]}</option>`).join('')}</select>`;
+/* Администратор: новый пользователь сразу в нужной группе. Участник появится и в списке участников. Логин и пароль можно не задавать. */
+function addAccount(after) {
+  const L = openSheet({ title: 'Новый пользователь' });
+  const tids = new Set();
+  L.body.innerHTML = `<label class="lbl" for="naF">ФИО</label><input class="fld" id="naF" maxlength="80" placeholder="Например, Иванов Иван Иванович" autocomplete="off">
+    <label class="lbl" for="naR">Группа</label>${groupSelect('naR', 'participant')}<div class="hint" id="naD"></div>
+    <div id="naTW"><span class="lbl" id="naTL">Коллективы</span><div class="sug" id="naT" style="margin-top:0">${teamChips(tids)}</div><div class="hint" id="naTH"></div></div>
+    <label class="lbl" for="naL">Логин <span class="muted">· необязательно</span></label><input class="fld" id="naL" autocapitalize="off" spellcheck="false" placeholder="Создастся из ФИО">
+    <label class="lbl" for="naP">Пароль <span class="muted">· необязательно</span></label><input class="fld" id="naP" autocapitalize="off" spellcheck="false" placeholder="Создастся сам">
+    <div id="naErr"></div>`;
   L.foot.innerHTML = '<button class="btn" data-close>Отмена</button><span class="sp"></span><button class="btn pri" data-ok>Создать</button>';
-  const ok = async () => {
-    const fio = clean($('#mdF', L.body).value);
-    if (!fio) { $('#mdErr', L.body).innerHTML = `<div class="err">${I.alert}<span>Введите ФИО.</span></div>`; return; }
-    const b = $('[data-ok]', L.foot); b.disabled = true;
-    try {
-      const r = await gcall('adminAddModerator', Store.token, fio);
-      closeSheet(L); toast('Модератор добавлен');
-      after(r.id);
-    } catch (e) { $('#mdErr', L.body).innerHTML = `<div class="err">${I.alert}<span>${esc(dbErr(e))}</span></div>`; b.disabled = false; }
+  const sync = () => {
+    const r = $('#naR', L.body).value;
+    $('#naD', L.body).textContent = ROLE_RU[r] + ' ' + GROUP_DESC[r] + '.';
+    $('#naTW', L.body).hidden = r !== 'participant' && r !== 'leader';
+    $('#naTL', L.body).textContent = r === 'leader' ? 'Руководит коллективами · необязательно' : 'Коллективы';
+    $('#naTH', L.body).textContent = r === 'leader' ? 'В выбранных коллективах он станет руководителем вместо прежнего. Можно указать позже в разделе «Коллективы».' : 'Участник появится в списке участников этих коллективов.';
   };
-  $('[data-ok]', L.foot).onclick = ok; $('#mdF', L.body).onkeydown = e => { if (e.key === 'Enter') ok(); };
-  setTimeout(() => $('#mdF', L.body).focus(), 60);
+  $('#naR', L.body).onchange = sync; sync();
+  $('#naT', L.body).addEventListener('click', e => { const b = e.target.closest('[data-tm]'); if (!b) return; tids.has(b.dataset.tm) ? tids.delete(b.dataset.tm) : tids.add(b.dataset.tm); b.setAttribute('aria-pressed', tids.has(b.dataset.tm)); });
+  const err = m => { $('#naErr', L.body).innerHTML = m ? `<div class="err">${I.alert}<span>${esc(m)}</span></div>` : ''; };
+  const ok = async () => {
+    const r = $('#naR', L.body).value, d = { fio: clean($('#naF', L.body).value), role: r, teamIds: r === 'participant' || r === 'leader' ? [...tids] : [], login: clean($('#naL', L.body).value), password: $('#naP', L.body).value };
+    if (!d.fio) { err('Введите ФИО.'); $('#naF', L.body).focus(); return; }
+    if (r === 'participant' && isDup(d.fio)) { err('Такой участник уже есть: найдите его в списке и смените группу.'); return; }
+    const b = $('[data-ok]', L.foot); b.disabled = true; err('');
+    try {
+      const res = await gcall('adminCreateAccount', Store.token, d);
+      closeSheet(L); toast(`${ROLE_RU[r]} добавлен: логин ${res.login}, пароль ${res.password}`);
+      if (r === 'participant' || (r === 'leader' && d.teamIds.length)) poll();
+      after(res.id);
+    } catch (e) { err(dbErr(e)); b.disabled = false; }
+  };
+  $('[data-ok]', L.foot).onclick = ok; $('#naF', L.body).onkeydown = e => { if (e.key === 'Enter') ok(); };
+  setTimeout(() => $('#naF', L.body).focus(), 60);
 }
 function editAccount(a, after) {
   if (!a) return;
   const L = openSheet({ title: a.fio });
-  const isAdm = a.role === 'admin';
+  const self = !!Auth.me && a.id === Auth.me.id;
   L.body.innerHTML = `<label class="lbl" for="eaL">Логин</label><input class="fld" id="eaL" value="${esc(a.login)}" autocapitalize="off" spellcheck="false">
     <label class="lbl" for="eaP">Пароль</label><input class="fld" id="eaP" value="${esc(a.password)}" autocapitalize="off" spellcheck="false">
-    ${isAdm ? '' : `<label class="lbl" for="eaR">Роль</label><select class="fld" id="eaR"><option value="participant">Участник</option><option value="leader">Руководитель</option><option value="moderator">Модератор</option></select>`}
+    <label class="lbl" for="eaR">Группа</label>${groupSelect('eaR', a.role, self)}<div class="hint" id="eaRD"></div>
     <label class="lbl" for="eaT">Telegram</label><input class="fld" id="eaT" value="${esc(a.telegram)}" autocapitalize="off" spellcheck="false">
     <label class="lbl" for="eaM">MAX</label><div class="phone">${RU_FLAG}<input class="fld" id="eaM" type="tel" inputmode="tel" value="${esc(a.max)}" placeholder="+79999999999" maxlength="16"></div>
     <div class="hint">Уведомления: Telegram ${a.tgLinked ? (a.tgOn ? 'подключён' : 'подключён, выключен') : 'не подключён'}, MAX ${a.maxLinked ? (a.maxOn ? 'подключён' : 'подключён, выключен') : 'не подключён'}.</div>
     ${a.hasAvatar ? '<label class="row2" style="margin-top:14px"><input type="checkbox" id="eaA"> Убрать фото профиля</label>' : ''}
     <div class="hint">После смены пароля человеку нужно будет войти заново.</div><div id="eaErr"></div>`;
-  if (!isAdm) $('#eaR', L.body).value = a.role;
+  const rd = () => { const r = $('#eaR', L.body).value; $('#eaRD', L.body).textContent = self ? 'Свою группу поменять нельзя.' : ROLE_RU[r] + ' ' + GROUP_DESC[r] + '.' + (r === 'leader' && !a.leader ? ' Руководит коллективами, где он указан руководителем.' : ''); };
+  $('#eaR', L.body).onchange = rd; rd();
   phoneInput($('#eaM', L.body));
-  const own = !isAdm && !a.memberId && !a.leader; // запись, созданную вручную (модератора), можно удалить
+  const own = !self && !a.memberId && (a.manual || (!a.leader && a.role !== 'admin')); // запись, добавленную вручную, можно удалить
   L.foot.innerHTML = `${own ? '<button class="btn dng" data-del>Удалить</button>' : ''}<button class="btn" data-close>Отмена</button><span class="sp"></span><button class="btn pri" data-ok>Сохранить</button>`;
   if (own) $('[data-del]', L.foot).onclick = async () => {
     if (!(await confirmSheet(`Удалить учётную запись «${a.fio}»? Человек больше не сможет войти.`))) return;
@@ -4592,7 +4772,7 @@ function editAccount(a, after) {
   };
   $('[data-ok]', L.foot).onclick = async () => {
     const d = { login: clean($('#eaL', L.body).value), password: $('#eaP', L.body).value, telegram: clean($('#eaT', L.body).value), max: phoneVal($('#eaM', L.body)) };
-    if (!isAdm) d.role = $('#eaR', L.body).value;
+    if (!self) d.role = $('#eaR', L.body).value;
     if ($('#eaA', L.body) && $('#eaA', L.body).checked) d.clearAvatar = true;
     const b = $('[data-ok]', L.foot); b.disabled = true;
     try { const r = await gcall('adminUpdateAccount', Store.token, a.id, d); if (r && r.token) { Store.token = r.token; lsSet('reiting_tok', r.token); } closeSheet(L); toast('Сохранено'); after(); if (Auth.me && a.id === Auth.me.id) refreshMe(); }
@@ -4633,7 +4813,7 @@ function openBots() {
 
 function boot() {
   if (!hasApi()) {
-    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true, k: true, j: true }; S.canWrite = false; S.canEv = false; document.body.classList.add('ro', 'roe');
+    S.ready = { m: true, t: true, e: true, o: true, s: true, g: true, n: true, k: true, j: true, lk: true, cm: true }; S.canWrite = false; S.canEv = false; document.body.classList.add('ro', 'roe');
     $('#noDb').textContent = 'Это файл приложения. Он работает, когда открыт по ссылке веб-приложения Google Apps Script.';
     $('#noDb').hidden = false; setSync(false, 'Нет базы'); render(); return;
   }
@@ -4643,7 +4823,8 @@ function boot() {
   });
   sub('members', 'members', 'm'); sub('teams', 'teams', 't'); sub('events', 'events', 'e');
   sub('officials', 'officials', 'o'); sub('sessions', 'sessions', 's'); sub('settings', 'settings', 'g'); sub('news', 'news', 'n');
-  sub('tasks', 'tasks', 'k'); sub('adjust', 'adjust', 'j');
+  sub('tasks', 'tasks', 'k'); sub('adjust', 'adjust', 'j'); sub('likes', 'likes', 'lk'); sub('comments', 'comments', 'cm');
+  GDB.collection('comments').onSnapshot(() => { if (cmOpen) cmOpen(); });
   startSession();
 }
 fbInit();
