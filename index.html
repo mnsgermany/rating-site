@@ -2037,7 +2037,7 @@ function openEvent(id, justCreated) {
     phRender();
     const rep = `<button class="btn" data-rep data-we>${I.doc}Рапорт</button>`, del = `<button class="btn dng" data-delev>${I.trash}Удалить</button>`;
     L.foot.innerHTML = !S.canEv ? `${rep}<span class="sp"></span><button class="btn" data-close>Закрыть</button>`
-      : editing ? `${del}<span class="sp"></span><button class="btn" data-editev>${I.edit}Данные</button><button class="btn" data-cancelev>Отмена</button><button class="btn pri" data-saveev ${n ? '' : 'disabled'}>Сохранить${n ? ` (${n})` : ''}</button>`
+      : editing ? `${del}<span class="sp"></span><button class="btn" data-editev>${I.edit}Данные</button><button class="btn" data-cancelev>Отмена</button><button class="btn pri" data-saveev>Сохранить${n ? ` (${n})` : ''}</button>`
       : `${rep}${del}<span class="sp"></span><button class="btn" data-close>Закрыть</button><button class="btn pri" data-start ${lk ? 'disabled' : ''}>${I.edit}Редактировать</button>`;
   };
   L.body.addEventListener('change', e2 => {
@@ -2079,6 +2079,8 @@ function openEvent(id, justCreated) {
       return;
     }
     const sv = t.closest('[data-saveev]');
+    /* без изменений участников «Сохранить» просто закрывает: мероприятие уже создано */
+    if (sv && editing && !dirty()) { closeSheet(L); toast('Мероприятие сохранено'); return; }
     if (sv && editing && dirty()) {
       const ops = [];
       dr.rm.forEach(memberId => ops.push({ op: 'partRemove', coll: 'events', id, data: { memberId } }));
