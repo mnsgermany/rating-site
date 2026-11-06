@@ -1793,6 +1793,7 @@ function renderEvents() {
   if (!S.events.length) { el.style.display = 'block'; el.innerHTML = `<div class="card"><div class="empty"><div class="eic">${I.cal}</div><h3>Мероприятий пока нет</h3><p>Создайте мероприятие, задайте баллы за категорию и место, затем добавьте участников — рейтинг пересчитается сам.</p><div data-we style="margin-top:6px"><button class="btn pri" data-act="addev" data-addev>Добавить мероприятие</button></div></div></div>`; return; }
   el.style.display = '';
   const q = norm(S.eq);
+  const lvIdx = l => { const i = scoring().levels.findIndex(x => norm(x) === norm(l)); return i < 0 ? 99 : i; };
   /* сортировка из списка «Сортировка»; везде новые и самые большие выше */
   const byDate = (a, b) => String(b.date).localeCompare(String(a.date)) || (b.createdAt || 0) - (a.createdAt || 0);
   const cmp = { added: (a, b) => (b.createdAt || 0) - (a.createdAt || 0) || byDate(a, b),
