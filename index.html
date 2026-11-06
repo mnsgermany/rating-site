@@ -1226,10 +1226,10 @@ body{background:radial-gradient(900px 420px at 92% -120px,color-mix(in srgb,var(
 
   <section class="view" id="v-teams" hidden>
     <div class="vh">
-      <div><h1>Коллективы</h1><p id="tModeP">Рейтинг коллективов: баллы всех участников. Нажмите «Участники», чтобы увидеть состав</p></div>
+      <div><h1>Коллективы</h1><p id="tModeP">Посещаемость за 30 дней: сколько раз пришли из всех возможных посещений (участники × занятия). Размер коллектива не важен, уважительные пропуски не считаются</p></div>
       <div class="acts"><button class="btn pri" id="bAddT" data-w><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Добавить коллектив</button></div>
     </div>
-    <div class="seg" id="tMode" role="group" aria-label="Как считать рейтинг коллективов"><button type="button" data-tmode="sum" aria-pressed="true">Сумма баллов</button><button type="button" data-tmode="avg" aria-pressed="false">В среднем на участника</button><button type="button" data-tmode="att" aria-pressed="false">Посещаемость, %</button></div>
+    <div class="seg" id="tMode" role="group" aria-label="Как считать рейтинг коллективов"><button type="button" data-tmode="att" aria-pressed="true">Посещаемость, %</button><button type="button" data-tmode="sum" aria-pressed="false">Сумма баллов</button><button type="button" data-tmode="avg" aria-pressed="false">В среднем на участника</button></div>
     <div id="tList" class="tms"></div>
   </section>
 
@@ -1299,7 +1299,7 @@ const DEF_RULES = {
 const DEF_LEVEL = ['Внутреннее', 'Городское', 'Региональное', 'Всероссийское', 'Международное'];
 
 const S = { db: null, canWrite: true, canEv: true, members: [], teams: [], events: [], officials: [], sessions: [], settings: [], news: [], tasks: [], adjust: [], likes: [], comments: [], ready: { m: false, t: false, e: false, o: false, s: false, g: false, n: false, k: false, j: false, lk: false, cm: false },
-  view: 'feed', feedN: 12, teamMode: 'sum', sort: { key: 'rating', dir: 'desc' }, q: '', team: '', eq: '', ratings: new Map(), places: new Map() };
+  view: 'feed', feedN: 12, teamMode: 'att', sort: { key: 'rating', dir: 'desc' }, q: '', team: '', eq: '', ratings: new Map(), places: new Map() };
 
 /* ---------- toast ---------- */
 let tt;
@@ -3538,10 +3538,10 @@ function mineFirst(list, idOf = t => t.id) {
   return list.filter(x => ids.has(idOf(x))).concat(list.filter(x => !ids.has(idOf(x))));
 }
 function heroLeader() {
-  const st = teamStandings('sum'), ids = new Set(myTeams().map(t => t.id)), mine = st.filter(r => ids.has(r.t.id));
+  const st = teamStandings('att'), ids = new Set(myTeams().map(t => t.id)), mine = st.filter(r => ids.has(r.t.id));
   if (!mine.length) return '';
   return `<section class="hero">${HERO_FX}<div class="hero-k"><span>${mine.length > 1 ? 'Мои коллективы' : 'Мой коллектив'}</span><span class="up n">всего коллективов: ${st.length}</span></div>
-    <div class="hero-t">${mine.map(r => `<div class="hero-row"><span class="pl num">${r.place || '–'}</span><span style="min-width:0"><b>${esc(r.t.name)}</b><small>${r.n} ${plural(r.n, 'участник', 'участника', 'участников')} · явка ${r.att == null ? 'нет отметок' : r.att + '%'}</small></span><span class="pt num">${fmtN(r.sum)}${r.week > 0 ? `<small style="color:#7BE0A9">+${fmtN(r.week)} за неделю</small>` : ''}</span></div>`).join('')}</div>
+    <div class="hero-t">${mine.map(r => `<div class="hero-row"><span class="pl num">${r.place || '–'}</span><span style="min-width:0"><b>${esc(r.t.name)}</b><small>${r.n} ${plural(r.n, 'участник', 'участника', 'участников')} · ${fmtN(r.sum)} ${bal(r.sum)}</small></span><span class="pt num">${r.att == null ? '—' : r.att + '%'}${r.week > 0 ? `<small style="color:#7BE0A9">+${fmtN(r.week)} за неделю</small>` : ''}</span></div>`).join('')}</div>
     <button class="hero-a" type="button" data-go="teams">${I.shield}Рейтинг коллективов</button></section>`;
 }
 function heroAdmin() {
@@ -3565,7 +3565,7 @@ function nextCard(teams) {
 /* «Мой коллектив» для участника: место среди коллективов, баллы, явка и ближайшая репетиция. */
 function myTeamCard() {
   const ids = new Set(myTeams().map(t => t.id)); if (!ids.size) return '';
-  const st = teamStandings('sum'), ranked = st.filter(r => r.place).length;
+  const st = teamStandings('att'), ranked = st.filter(r => r.place).length;
   const mine = st.filter(r => ids.has(r.t.id));
   const now = new Date(), d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const when = nx => { const dd = Math.round((new Date(nx.d.getFullYear(), nx.d.getMonth(), nx.d.getDate()) - d0) / 86400000);
@@ -3738,9 +3738,9 @@ function renderFeed() {
   else if (role === 'admin') html += heroAdmin();
   if (me && me.memberId && myTeams().length) html += myTeamCard();
   else html += nextCard(myTeams());
-  const mineT = new Set(myTeams().map(t => t.id)), st = mineFirst(teamStandings('sum').filter(r => r.n), r => r.t.id);
+  const mineT = new Set(myTeams().map(t => t.id)), st = mineFirst(teamStandings('att').filter(r => r.n), r => r.t.id);
   if (st.length > 1) html += `<div class="fd-sec"><h2>${I.shield}Рейтинг коллективов</h2><button type="button" data-go="teams">Все${I.right}</button></div>
-    <div class="strip">${st.map(r => `<button class="tc${mineT.has(r.t.id) ? ' me' : ''}${r.place && r.place <= 3 ? ' top' + r.place + ' k' + r.place : ''}" type="button" data-go="teams"><span class="tp">${r.place && r.place <= 3 ? `<span class="medal m${r.place}">${r.place}</span>` : `<span class="pl num">${r.place ? r.place + '-е место' : '–'}</span>`}${mineT.has(r.t.id) ? '<span class="mytag">Ваш</span>' : r.week > 0 ? `<span class="gp num">+${fmtN(r.week)}</span>` : ''}</span><h3>${esc(r.t.name)}</h3><span><span class="sc">${fmtN(r.sum)}</span> <small>${bal(r.sum)}</small></span><span class="tb" aria-hidden="true"><i style="width:${st.reduce((m, x) => Math.max(m, x.sum), 0) > 0 ? Math.max(4, Math.round(r.sum / st.reduce((m, x) => Math.max(m, x.sum), 0) * 100)) : 0}%"></i></span><small>${r.n} ${plural(r.n, 'участник', 'участника', 'участников')}${r.att != null ? ' · явка ' + r.att + '%' : ''}</small></button>`).join('')}</div>`;
+    <div class="strip">${st.map(r => `<button class="tc${mineT.has(r.t.id) ? ' me' : ''}${r.place && r.place <= 3 ? ' top' + r.place + ' k' + r.place : ''}" type="button" data-go="teams"><span class="tp">${r.place && r.place <= 3 ? `<span class="medal m${r.place}">${r.place}</span>` : `<span class="pl num">${r.place ? r.place + '-е место' : '–'}</span>`}${mineT.has(r.t.id) ? '<span class="mytag">Ваш</span>' : r.week > 0 ? `<span class="gp num">+${fmtN(r.week)}</span>` : ''}</span><h3>${esc(r.t.name)}</h3><span><span class="sc">${r.att == null ? '—' : r.att + '%'}</span> <small>явка, ${ATT_DAYS} дн.</small></span><span class="tb" aria-hidden="true"><i style="width:${r.att ? Math.max(4, r.att) : 0}%"></i></span><small>${r.n} ${plural(r.n, 'участник', 'участника', 'участников')} · ${fmtN(r.sum)} ${bal(r.sum)}</small></button>`).join('')}</div>`;
   const items = feedItems(), pinned = S.news.filter(n => isOn(n.pinned)).sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
   html += `<div class="fd-sec"><h2>${I.news}Что нового</h2></div>`;
   pinned.forEach(n => { html += feedNews(n, Number(n.createdAt) || 0, true); });
