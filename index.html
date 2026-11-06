@@ -2534,7 +2534,6 @@ function buildDocx(m) {
     body.push(rpP(`${b.title}:`, { ind: IND_TEAM, jc: 'both' }));
     b.people.forEach(p => body.push(rpP(p, { num: i + 1, ind: IND_LIST, jc: 'both' })));
   });
-  if (m.basis) { body.push(rpP('')); body.push(rpP(m.basis, { ind: IND_FIRST, jc: 'both' })); }
   body.push(rpP(''), rpP(''));
   if (m.responsible) {
     body.push(rpP('Ответственный:', { jc: 'both' }), rpP(m.responsible.position, { jc: 'both' }));
@@ -3181,10 +3180,9 @@ function docModel(d) {
   const basis = clean(d.basis);
   return {
     addressee: String(d.to || '').split('\n').map(clean).filter(Boolean),
-    lead: `В связи с ${clean(d.reason) || defReason(d)}, прошу Вас освободить${ex ? ' от ' + ex : ''} следующих обучающихся:`,
+    lead: `В связи с ${clean(d.reason) || defReason(d)}${basis ? ` (${basis.replace(/\.$/, '')})` : ''}, прошу Вас освободить${ex ? ' от ' + ex : ''} следующих обучающихся:`,
     slots: slotLines(d.slots),
     blocks: d.blocks,
-    basis: basis ? `Основание: ${basis.replace(/\.$/, '')}.` : '',
     signer: d.signer ? { position: clean(d.signer.position), rank: clean(d.signer.rank), name: signName(d.signer.name) } : null,
     responsible: d.responsible ? { position: clean(d.responsible.position), rank: clean(d.responsible.rank), name: signName(d.responsible.name) } : null,
     date: dateQuoted(d.reportDate)
@@ -3194,7 +3192,7 @@ function previewHtml(m) {
   return `<div class="paper"><div class="rp-to">${esc(m.addressee.join('\n'))}</div><div class="rp-ttl">Рапорт</div><div class="rp-bd">
     <p>${esc(m.lead)}</p>${m.slots.map(s => `<p><b>${esc(s)}</b></p>`).join('')}
     ${m.blocks.map(b => `<p class="rp-bl">${esc(b.title)}:</p><ol class="rp-ol">${b.people.map(p => `<li>${esc(p)}</li>`).join('')}</ol>`).join('')}
-    ${m.basis ? `<p>${esc(m.basis)}</p>` : ''}</div>
+    </div>
     ${m.responsible ? `<div class="rp-dt" style="margin-top:22px">Ответственный:<br>${esc(m.responsible.position)}<br>${esc(m.responsible.rank ? m.responsible.rank + '   ' : '')}______________ ${esc(m.responsible.name)}</div>` : ''}
     <div class="rp-sg"><div>${esc(m.signer ? m.signer.position : '')}<br>${esc(m.signer ? m.signer.rank + '   ______________ ' + m.signer.name : '')}</div><div class="rp-dt">${esc(m.date)}</div></div>`;
 }
