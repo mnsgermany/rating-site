@@ -1220,7 +1220,7 @@ body{background:radial-gradient(900px 420px at 92% -120px,color-mix(in srgb,var(
       <div><h1>Мероприятия</h1><p>Каждое мероприятие начисляет баллы своим участникам</p></div>
       <div class="acts"><button class="btn" id="bScore"><svg class="i" viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M3.5 15h17M9.5 4v16"/></svg>Таблица баллов</button><button class="btn dng" id="bDelAllE" data-we><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Удалить все</button><button class="btn pri" id="bAddE" data-we data-addev><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Добавить мероприятие</button></div>
     </div>
-    <div class="bar"><label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="eq" type="search" placeholder="Поиск по названию…" autocomplete="off"></label></div>
+    <div class="bar"><label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="eq" type="search" placeholder="Поиск по названию…" autocomplete="off"></label><select class="sel" id="evSort" aria-label="Сортировка"><option value="date">По дате</option><option value="added">По дате добавления</option><option value="count">По количеству участников</option></select></div>
     <div id="eList" class="evs"></div>
   </section>
 
@@ -1793,10 +1793,11 @@ function renderEvents() {
   if (!S.events.length) { el.style.display = 'block'; el.innerHTML = `<div class="card"><div class="empty"><div class="eic">${I.cal}</div><h3>Мероприятий пока нет</h3><p>Создайте мероприятие, задайте баллы за категорию и место, затем добавьте участников — рейтинг пересчитается сам.</p><div data-we style="margin-top:6px"><button class="btn pri" data-act="addev" data-addev>Добавить мероприятие</button></div></div></div>`; return; }
   el.style.display = '';
   const q = norm(S.eq);
-  const lvIdx = l => { const i = scoring().levels.findIndex(x => norm(x) === norm(l)); return i < 0 ? 99 : i; };
-  /* сортировка: тип → уровень (как в таблице баллов) → формат → дата (новые выше) */
-  const list = S.events.filter(e => !q || norm([e.title, e.level, e.type, e.format].join(' ')).includes(q))
-    .sort((a, b) => coll.compare(a.type || '', b.type || '') || lvIdx(a.level) - lvIdx(b.level) || coll.compare(a.format || '', b.format || '') || String(b.date).localeCompare(String(a.date)) || (b.createdAt || 0) - (a.createdAt || 0));
+  /* сортировка из списка «Сортировка»; везде новые и самые большие выше */
+  const byDate = (a, b) => String(b.date).localeCompare(String(a.date)) || (b.createdAt || 0) - (a.createdAt || 0);
+  const cmp = { added: (a, b) => (b.createdAt || 0) - (a.createdAt || 0) || byDate(a, b),
+    count: (a, b) => (b.participants || []).length - (a.participants || []).length || byDate(a, b) }[S.esort] || byDate;
+  const list = S.events.filter(e => !q || norm([e.title, e.level, e.type, e.format].join(' ')).includes(q)).sort(cmp);
   if (!list.length) { el.style.display = 'block'; el.innerHTML = `<div class="card"><div class="empty"><div class="eic">${I.search}</div><h3>Ничего не нашли</h3><p>Попробуйте другой запрос.</p></div></div>`; return; }
   el.innerHTML = list.map(e => {
     const [y, m, d] = String(e.date || '').split('-');
@@ -4140,6 +4141,7 @@ $('#mDir').onclick = () => { S.sort.dir = S.sort.dir === 'asc' ? 'desc' : 'asc';
 $('#mq').oninput = e => { S.q = e.target.value; renderMembers(); };
 $('#mTeam').onchange = e => { S.team = e.target.value; renderMembers(); };
 $('#eq').oninput = e => { S.eq = e.target.value; renderEvents(); };
+$('#evSort').onchange = e => { S.esort = e.target.value; renderEvents(); };
 const openRow = e => { const tr = e.target.closest('tr[data-id]'); if (tr) openMember(tr.dataset.id); };
 $('#mBody').addEventListener('click', e => { const q = e.target.closest('[data-adjm]'); if (q) { e.stopPropagation(); adjustSheet(q.dataset.adjm, 1); return; } const x = e.target.closest('[data-delm]'); if (x) { e.stopPropagation(); if (S.db) deleteMember(x.dataset.delm); return; } openRow(e); });
 $('#mBody').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.target.closest('button')) openRow(e); });
