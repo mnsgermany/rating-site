@@ -276,7 +276,12 @@ table.t{width:100%;border-collapse:collapse}
 .pki b{font-weight:600}
 .pki small{display:block;color:var(--muted);font-size:12.5px}
 .pki.open{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
-.pkc{padding:2px 14px 14px;display:flex;flex-direction:column;gap:6px}
+.pkc{padding:2px 14px 14px;display:flex;flex-direction:column;gap:6px;grid-column:1/-1}
+.pki{display:grid;grid-template-columns:auto 1fr}
+.pkck{display:flex;align-items:center;padding-left:14px;cursor:pointer}
+.pkck input{width:20px;height:20px;margin:0;accent-color:var(--accent);cursor:pointer}
+#pBulk{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#pBulk:empty{display:none}
 .pkc .go{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
 .pkc .go b{font:700 18px var(--f-display)}
 
@@ -2143,12 +2148,15 @@ function editRules(id) {
 }
 function openPicker(id, dr, redraw) {
   const L = openSheet({ title: 'Добавить участников', wide: false });
-  let q = '', open = null, sel = {};
+  /* tf — открытая вкладка: '*' все, id коллектива или '' без коллектива; chk — отмеченные галочкой */
+  let q = '', open = null, sel = {}, tf = '*';
+  const chk = new Set();
   const teamsSorted = S.teams.slice().sort((a, b) => coll.compare(a.name, b.name));
   const hasNoTeam = S.members.some(m => !mTeams(m).length);
-  const teamBtns = teamsSorted.map(t => `<button class="chip" type="button" data-team="${esc(t.id)}">+ ${esc(t.name)}</button>`).join('')
-    + (hasNoTeam ? '<button class="chip" type="button" data-team="">+ Без коллектива</button>' : '');
-  L.body.innerHTML = `${teamBtns ? `<div class="hint" style="margin-top:0">Весь коллектив сразу, с категорией и местом по умолчанию:</div><div class="sug" id="pTeams">${teamBtns}</div>` : ''}<label class="search" style="display:block">${I.search}<input id="pq" type="search" placeholder="Поиск по ФИО" autocomplete="off"></label><div class="hint" id="pInfo"></div><div class="pk" id="pk"></div>`;
+  const tabs = teamsSorted.length ? '<button class="chip" type="button" data-tf="*" aria-pressed="true">Все</button>' + teamsSorted.map(t => `<button class="chip" type="button" data-tf="${esc(t.id)}" aria-pressed="false">${esc(t.name)}</button>`).join('')
+    + (hasNoTeam ? '<button class="chip" type="button" data-tf="" aria-pressed="false">Без коллектива</button>' : '') : '';
+  const shown = inEv => { const nq = norm(q); return S.members.filter(m => !inEv.has(m.id) && (tf === '*' || (tf ? inTeam(m, tf) : !mTeams(m).length)) && (!nq || norm(m.fio + ' ' + m.group).includes(nq))).sort((a, b) => coll.compare(a.fio, b.fio)); };
+  L.body.innerHTML = `${tabs ? `<div class="hint" style="margin-top:0">Откройте коллектив и отметьте нужных галочками или найдите человека поиском:</div><div class="sug" id="pTeams" role="group" aria-label="Коллектив">${tabs}</div>` : ''}<label class="search" style="display:block">${I.search}<input id="pq" type="search" placeholder="Поиск по ФИО" autocomplete="off"></label><div id="pBulk"></div><div class="hint" id="pInfo"></div><div class="pk" id="pk"></div>`;
   L.foot.innerHTML = `<button class="btn pri" data-close>Готово</button>`;
   const inList = e => new Set([...(e.participants || []).map(p => p.memberId).filter(m => !dr.rm.has(m)), ...dr.add.keys()]);
   const list = () => {
@@ -2156,26 +2164,30 @@ function openPicker(id, dr, redraw) {
     const inEv = inList(e);
     const cats = ruleList(e.rules, 'categories'), pls = ruleList(e.rules, 'places');
     const nq = norm(q);
-    const ms = S.members.filter(m => !inEv.has(m.id) && (!nq || norm(m.fio + ' ' + m.group).includes(nq))).sort((a, b) => coll.compare(a.fio, b.fio));
-    $('#pInfo', L.body).textContent = `В списке мероприятия: ${inEv.size}${e.count ? ' из ' + e.count : ''}. Выберите участника, категорию и место, затем «Добавить в список». Сохранится всё вместе кнопкой «Сохранить» в мероприятии.`;
+    const ms = shown(inEv);
+    inEv.forEach(mid => chk.delete(mid));
+    const vis = ms.slice(0, 150), allOn = vis.length > 0 && vis.every(m => chk.has(m.id));
+    $('#pBulk', L.body).innerHTML = `${vis.length && (tf !== '*' || nq) ? `<button class="btn" type="button" data-ckall>${allOn ? 'Снять отметки' : 'Отметить всех'}</button>` : ''}${chk.size ? `<button class="btn pri" type="button" data-addck>Добавить отмеченных: ${chk.size}</button>` : ''}`;
+    $('#pInfo', L.body).textContent = `В списке мероприятия: ${inEv.size}${e.count ? ' из ' + e.count : ''}. Отметьте людей галочками и нажмите «Добавить отмеченных» (категория и место по умолчанию) или нажмите на человека, чтобы выбрать категорию и место. Сохранится всё вместе кнопкой «Сохранить» в мероприятии.`;
     if (!S.members.length) { $('#pk', L.body).innerHTML = '<div class="empty" style="padding:24px"><p>Сначала добавьте участников в разделе «Участники».</p></div>'; return; }
     if (!ms.length) { $('#pk', L.body).innerHTML = `<div class="empty" style="padding:24px"><p>${nq ? 'Никого не нашли.' : 'Все участники уже в списке.'}</p></div>`; return; }
     $('#pk', L.body).innerHTML = ms.slice(0, 150).map(m => {
       const isO = open === m.id, s = sel[m.id] || (sel[m.id] = { category: (cats[0] || {}).name || '', place: (pls[pls.length - 1] || {}).name || '' });
-      return `<div class="pki ${isO ? 'open' : ''}" data-m="${m.id}"><button data-tg aria-expanded="${isO}"><span style="min-width:0"><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, teamsLabel(m)].filter(Boolean).join(' · '))}</small></span>${isO ? '' : I.plus}</button>
+      return `<div class="pki ${isO ? 'open' : ''}" data-m="${m.id}"><label class="pkck"><input type="checkbox" data-ck ${chk.has(m.id) ? 'checked' : ''} aria-label="Отметить: ${esc(m.fio)}"></label><button data-tg aria-expanded="${isO}"><span style="min-width:0"><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, teamsLabel(m)].filter(Boolean).join(' · '))}</small></span>${isO ? '' : I.plus}</button>
         ${isO ? `<div class="pkc"><span class="lbl" style="margin:0">Категория участия</span><div class="sug" style="margin:0">${cats.map(c => `<button class="chip" data-c="${esc(c.name)}" aria-pressed="${s.category === c.name}">${esc(c.name)} · ${fmtN(c.points)}</button>`).join('')}</div>
         <span class="lbl" style="margin:6px 0 0">Место</span><div class="sug" style="margin:0">${pls.map(c => `<button class="chip" data-pl="${esc(c.name)}" aria-pressed="${s.place === c.name}">${esc(c.name)} · ${fmtN(c.points)}</button>`).join('')}</div>
         <div class="go"><span><b class="num">+${fmtN(ptsFor(e.rules, s))}</b> <span class="muted">${plural(Math.round(ptsFor(e.rules, s)), 'балл', 'балла', 'баллов')}</span></span><button class="btn pri" data-go>Добавить в список</button></div></div>` : ''}</div>`;
     }).join('') + (ms.length > 150 ? '<div class="hint">Показаны первые 150 — уточните поиск.</div>' : '');
   };
-  /* Весь коллектив: добавляет всех, кого ещё нет в списке, с категорией и местом по умолчанию */
-  const addTeam = tid => {
+  /* Отмеченные галочками: добавляет всех, кого ещё нет в списке, с категорией и местом по умолчанию */
+  const addChecked = () => {
     const e = S.events.find(x => x.id === id); if (!e) return;
     const inEv = inList(e);
     const cats = ruleList(e.rules, 'categories'), pls = ruleList(e.rules, 'places');
     const v = { category: (cats[0] || {}).name || '', place: (pls[pls.length - 1] || {}).name || '' };
-    const ms = S.members.filter(m => tid ? inTeam(m, tid) : !mTeams(m).length).filter(m => !inEv.has(m.id));
-    if (!ms.length) { toast('В этом коллективе все уже в списке'); return; }
+    const ms = S.members.filter(m => chk.has(m.id) && !inEv.has(m.id));
+    chk.clear();
+    if (!ms.length) { toast('Отмеченные уже в списке'); list(); return; }
     ms.forEach(m => {
       if (dr.rm.has(m.id)) {
         dr.rm.delete(m.id);
@@ -2186,10 +2198,20 @@ function openPicker(id, dr, redraw) {
     toast(`Добавлено в список: ${ms.length}. Не забудьте «Сохранить».`);
     redraw(); list();
   };
-  L.body.addEventListener('click', ev => { const b = ev.target.closest('[data-team]'); if (b) addTeam(b.dataset.team); });
+  L.body.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-tf]');
+    if (t) { tf = t.dataset.tf; $$('[data-tf]', L.body).forEach(x => x.setAttribute('aria-pressed', x === t)); open = null; list(); return; }
+    if (ev.target.closest('[data-addck]')) { addChecked(); return; }
+    if (ev.target.closest('[data-ckall]')) {
+      const e = S.events.find(x => x.id === id); if (!e) return;
+      const vis = shown(inList(e)).slice(0, 150), on = !vis.every(m => chk.has(m.id));
+      vis.forEach(m => on ? chk.add(m.id) : chk.delete(m.id)); list();
+    }
+  });
   $('#pq', L.body).addEventListener('input', ev => { q = ev.target.value; open = null; list(); });
   $('#pk', L.body).addEventListener('click', ev => {
     const it = ev.target.closest('[data-m]'); if (!it) return; const mid = it.dataset.m;
+    if (ev.target.matches('[data-ck]')) { ev.target.checked ? chk.add(mid) : chk.delete(mid); list(); return; }
     if (ev.target.closest('[data-tg]')) { open = open === mid ? null : mid; list(); return; }
     const c = ev.target.closest('[data-c]'); if (c) { sel[mid].category = c.dataset.c; list(); return; }
     const p = ev.target.closest('[data-pl]'); if (p) { sel[mid].place = p.dataset.pl; list(); return; }
