@@ -3363,10 +3363,14 @@ function openReport(preset = {}) {
             <div class="rb-h"><b>${esc(title)}</b></div>
             ${ms.map(m => `<label class="rb-p" data-s="${esc(norm(m.fio + ' ' + m.group))}"><input type="checkbox" value="${pkey(tid, m.id)}" ${sel.has(pkey(tid, m.id)) ? 'checked' : ''}><span><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, teamsLabel(m)].filter(Boolean).join(' · '))}</small></span></label>`).join('')}</section>`;
         const ev = d.eventId && S.events.find(e => e.id === d.eventId);
+        /* открытая вкладка: '*' все коллективы, id коллектива или '' без коллектива */
+        const cur = groups.find(g => g.tid === d.tab), tab = cur ? cur.tid : '*';
+        d.tab = tab;
         return `<label class="search stick">${I.search}<input id="rQ" type="search" placeholder="Поиск по ФИО или группе" value="${esc(d.q)}" autocomplete="off"></label>
           <div class="sug">${ev ? `<button class="chip" data-pev>Участники «${esc(ev.title)}»</button>` : ''}${d.people.length ? '<button class="chip ghost" data-pclr>Снять всех</button>' : ''}</div>
-          <div class="sug" id="rAll">${groups.map(g => `<button class="chip" type="button" data-all="${g.tid}" aria-pressed="${g.ms.every(m => sel.has(pkey(g.tid, m.id)))}">${esc(g.title)}</button>`).join('')}</div>
-          <div class="hint" id="rCnt">Выбрано: ${sel.size}. Нажмите название коллектива, чтобы выбрать всех его участников, затем снимите галочки у тех, кого не нужно указывать.</div>
+          <div class="sug" id="rAll" role="group" aria-label="Коллектив"><button class="chip" type="button" data-rtab="*" aria-pressed="${tab === '*'}">Все</button>${groups.map(g => `<button class="chip" type="button" data-rtab="${g.tid}" aria-pressed="${tab === g.tid}">${esc(g.title)}</button>`).join('')}</div>
+          ${cur ? `<div class="sug"><button class="btn" type="button" data-all="${cur.tid}">${cur.ms.every(m => sel.has(pkey(cur.tid, m.id))) ? 'Снять всех в коллективе' : 'Отметить всех в коллективе'}</button></div>` : ''}
+          <div class="hint" id="rCnt">Выбрано: ${sel.size}. Откройте коллектив и отметьте нужных галочками или найдите человека поиском.</div>
           <div class="pick" id="rPick">${sorted.map(t => block(t.name, grp(t), t.id)).join('')}${block('Без коллектива', grp(null), '')}</div>`;
       },
       bind: (root, d, w) => {
@@ -3374,12 +3378,14 @@ function openReport(preset = {}) {
         const apply = () => {
           const v = norm(q.value); d.q = q.value;
           $$('#rPick .rb-p', root).forEach(l => { l.hidden = !!v && !l.dataset.s.includes(v); });
-          $$('#rPick .rb', root).forEach(b => { b.hidden = !!v && !$$('.rb-p', b).some(l => !l.hidden); });
+          $$('#rPick .rb', root).forEach(b => { b.hidden = (d.tab !== '*' && b.dataset.tb !== d.tab) || (!!v && !$$('.rb-p', b).some(l => !l.hidden)); });
         };
         q.addEventListener('input', apply); apply();
         const sync = () => { d.people = [...new Set($$('#rPick input:checked', root).map(x => x.value))]; };
-        root.addEventListener('change', e => { if (e.target.type === 'checkbox') { sync(); $('#rCnt', root).textContent = `Выбрано: ${d.people.length}. Нажмите название коллектива, чтобы выбрать всех его участников, затем снимите галочки у тех, кого не нужно указывать.`; } });
+        root.addEventListener('change', e => { if (e.target.type === 'checkbox') { sync(); $('#rCnt', root).textContent = `Выбрано: ${d.people.length}. Откройте коллектив и отметьте нужных галочками или найдите человека поиском.`; } });
         root.addEventListener('click', e => {
+          const t = e.target.closest('[data-rtab]');
+          if (t) { sync(); d.tab = t.dataset.rtab; w.redraw(); return; }
           const a = e.target.closest('[data-all]');
           if (a) {
             const tid = a.dataset.all;
