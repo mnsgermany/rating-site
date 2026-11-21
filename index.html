@@ -2148,88 +2148,63 @@ function editRules(id) {
 }
 function openPicker(id, dr, redraw) {
   const L = openSheet({ title: 'Добавить участников', wide: false });
-  /* tf — открытая вкладка: '*' все, id коллектива или '' без коллектива; chk — отмеченные галочкой */
-  let q = '', open = null, sel = {}, tf = '*';
-  const chk = new Set();
-  const teamsSorted = S.teams.slice().sort((a, b) => coll.compare(a.name, b.name));
-  const hasNoTeam = S.members.some(m => !mTeams(m).length);
-  const tabs = teamsSorted.length ? '<button class="chip" type="button" data-tf="*" aria-pressed="true">Все</button>' + teamsSorted.map(t => `<button class="chip" type="button" data-tf="${esc(t.id)}" aria-pressed="false">${esc(t.name)}</button>`).join('')
-    + (hasNoTeam ? '<button class="chip" type="button" data-tf="" aria-pressed="false">Без коллектива</button>' : '') : '';
-  const shown = inEv => { const nq = norm(q); return S.members.filter(m => !inEv.has(m.id) && (tf === '*' || (tf ? inTeam(m, tf) : !mTeams(m).length)) && (!nq || norm(m.fio + ' ' + m.group).includes(nq))).sort((a, b) => coll.compare(a.fio, b.fio)); };
-  L.body.innerHTML = `${tabs ? `<div class="hint" style="margin-top:0">Откройте коллектив и отметьте нужных галочками или найдите человека поиском:</div><div class="sug" id="pTeams" role="group" aria-label="Коллектив">${tabs}</div>` : ''}<label class="search" style="display:block">${I.search}<input id="pq" type="search" placeholder="Поиск по ФИО" autocomplete="off"></label><div id="pBulk"></div><div class="hint" id="pInfo"></div><div class="pk" id="pk"></div>`;
-  L.foot.innerHTML = `<button class="btn pri" data-close>Готово</button>`;
+  /* как «Кого освободить» в рапорте: коллектив → окно с галочками, внизу все, кто уже в мероприятии */
+  let q = '';
+  const evNow = () => S.events.find(x => x.id === id);
   const inList = e => new Set([...(e.participants || []).map(p => p.memberId).filter(m => !dr.rm.has(m)), ...dr.add.keys()]);
+  const defV = e => { const cats = ruleList(e.rules, 'categories'), pls = ruleList(e.rules, 'places'); return { category: (cats[0] || {}).name || '', place: (pls[pls.length - 1] || {}).name || '' }; };
+  /* галочка = в списке мероприятия; вернувшийся после «убрать» получает прежние категорию и место */
+  const setIn = (e, mid, on) => {
+    const was = (e.participants || []).some(p => p.memberId === mid);
+    if (on) { if (dr.rm.has(mid)) dr.rm.delete(mid); else if (!was && !dr.add.has(mid)) dr.add.set(mid, defV(e)); }
+    else { dr.add.delete(mid); dr.set.delete(mid); if (was) dr.rm.add(mid); }
+  };
+  const byFio = (a, b) => coll.compare(a.fio, b.fio);
+  const teamMs = tid => S.members.filter(m => tid ? inTeam(m, tid) : !mTeams(m).length).sort(byFio);
+  const groups = () => S.teams.slice().sort((a, b) => coll.compare(a.name, b.name)).map(t => ({ title: t.name, tid: t.id })).concat([{ title: 'Без коллектива', tid: '' }]).filter(g => teamMs(g.tid).length);
+  const row = (m, on) => `<label class="rb-p"><input type="checkbox" value="${esc(m.id)}" ${on ? 'checked' : ''}><span><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, teamsLabel(m)].filter(Boolean).join(' · '))}</small></span></label>`;
+  L.body.innerHTML = `<div class="hint" style="margin-top:0">Нажмите коллектив, отметьте участников и нажмите «Готово». Добавленные видны в списке ниже. Категорию и место можно поменять в карточке мероприятия.</div>
+    <div class="sug" id="pTeams"></div>
+    <label class="search stick">${I.search}<input id="pq" type="search" placeholder="Поиск по ФИО или группе" autocomplete="off"></label>
+    <div class="pick" id="pRes" hidden></div><div class="hint" id="pInfo"></div><div class="pick" id="pAdded"></div>`;
+  L.foot.innerHTML = `<button class="btn pri" data-close>Готово</button>`;
   const list = () => {
-    const e = S.events.find(x => x.id === id); if (!e) { closeSheet(L); return; }
-    const inEv = inList(e);
-    const cats = ruleList(e.rules, 'categories'), pls = ruleList(e.rules, 'places');
-    const nq = norm(q);
-    const ms = shown(inEv);
-    inEv.forEach(mid => chk.delete(mid));
-    const vis = ms.slice(0, 150), allOn = vis.length > 0 && vis.every(m => chk.has(m.id));
-    $('#pBulk', L.body).innerHTML = `${vis.length && (tf !== '*' || nq) ? `<button class="btn" type="button" data-ckall>${allOn ? 'Снять отметки' : 'Отметить всех'}</button>` : ''}${chk.size ? `<button class="btn pri" type="button" data-addck>Добавить отмеченных: ${chk.size}</button>` : ''}`;
-    $('#pInfo', L.body).textContent = `В списке мероприятия: ${inEv.size}${e.count ? ' из ' + e.count : ''}. Отметьте людей галочками и нажмите «Добавить отмеченных» (категория и место по умолчанию) или нажмите на человека, чтобы выбрать категорию и место. Сохранится всё вместе кнопкой «Сохранить» в мероприятии.`;
-    if (!S.members.length) { $('#pk', L.body).innerHTML = '<div class="empty" style="padding:24px"><p>Сначала добавьте участников в разделе «Участники».</p></div>'; return; }
-    if (!ms.length) { $('#pk', L.body).innerHTML = `<div class="empty" style="padding:24px"><p>${nq ? 'Никого не нашли.' : 'Все участники уже в списке.'}</p></div>`; return; }
-    $('#pk', L.body).innerHTML = ms.slice(0, 150).map(m => {
-      const isO = open === m.id, s = sel[m.id] || (sel[m.id] = { category: (cats[0] || {}).name || '', place: (pls[pls.length - 1] || {}).name || '' });
-      return `<div class="pki ${isO ? 'open' : ''}" data-m="${m.id}"><label class="pkck"><input type="checkbox" data-ck ${chk.has(m.id) ? 'checked' : ''} aria-label="Отметить: ${esc(m.fio)}"></label><button data-tg aria-expanded="${isO}"><span style="min-width:0"><b>${esc(m.fio)}</b><small>${esc([m.group && 'гр. ' + m.group, teamsLabel(m)].filter(Boolean).join(' · '))}</small></span>${isO ? '' : I.plus}</button>
-        ${isO ? `<div class="pkc"><span class="lbl" style="margin:0">Категория участия</span><div class="sug" style="margin:0">${cats.map(c => `<button class="chip" data-c="${esc(c.name)}" aria-pressed="${s.category === c.name}">${esc(c.name)} · ${fmtN(c.points)}</button>`).join('')}</div>
-        <span class="lbl" style="margin:6px 0 0">Место</span><div class="sug" style="margin:0">${pls.map(c => `<button class="chip" data-pl="${esc(c.name)}" aria-pressed="${s.place === c.name}">${esc(c.name)} · ${fmtN(c.points)}</button>`).join('')}</div>
-        <div class="go"><span><b class="num">+${fmtN(ptsFor(e.rules, s))}</b> <span class="muted">${plural(Math.round(ptsFor(e.rules, s)), 'балл', 'балла', 'баллов')}</span></span><button class="btn pri" data-go>Добавить в список</button></div></div>` : ''}</div>`;
-    }).join('') + (ms.length > 150 ? '<div class="hint">Показаны первые 150 — уточните поиск.</div>' : '');
+    const e = evNow(); if (!e) { closeSheet(L); return; }
+    const inEv = inList(e), nq = norm(q);
+    if (!S.members.length) { $('#pInfo', L.body).textContent = 'Сначала добавьте участников в разделе «Участники».'; return; }
+    $('#pTeams', L.body).innerHTML = groups().map(g => { const n = teamMs(g.tid).filter(m => inEv.has(m.id)).length; return `<button class="chip" type="button" data-rt="${esc(g.tid)}" aria-pressed="${n > 0}">${esc(g.title)}${n ? ' · ' + n : ''}</button>`; }).join('');
+    const found = nq ? S.members.filter(m => norm(m.fio + ' ' + m.group).includes(nq)).sort(byFio) : [];
+    const res = $('#pRes', L.body); res.hidden = !nq;
+    res.innerHTML = found.length ? found.slice(0, 150).map(m => row(m, inEv.has(m.id))).join('') : '<div class="hint">Никого не нашли.</div>';
+    const added = S.members.filter(m => inEv.has(m.id)).sort(byFio);
+    $('#pInfo', L.body).textContent = `В мероприятии: ${added.length}${e.count ? ' из ' + e.count : ''}.${added.length ? ' Снимите галочку, чтобы убрать человека.' : ''} Изменения применятся после «Сохранить» в карточке.`;
+    $('#pAdded', L.body).innerHTML = added.map(m => row(m, true)).join('');
   };
-  /* Отмеченные галочками: добавляет всех, кого ещё нет в списке, с категорией и местом по умолчанию */
-  const addChecked = () => {
-    const e = S.events.find(x => x.id === id); if (!e) return;
-    const inEv = inList(e);
-    const cats = ruleList(e.rules, 'categories'), pls = ruleList(e.rules, 'places');
-    const v = { category: (cats[0] || {}).name || '', place: (pls[pls.length - 1] || {}).name || '' };
-    const ms = S.members.filter(m => chk.has(m.id) && !inEv.has(m.id));
-    chk.clear();
-    if (!ms.length) { toast('Отмеченные уже в списке'); list(); return; }
-    ms.forEach(m => {
-      if (dr.rm.has(m.id)) {
-        dr.rm.delete(m.id);
-        const o = (e.participants || []).find(x => x.memberId === m.id);
-        if (o && (o.category !== v.category || o.place !== v.place)) dr.set.set(m.id, v);
-      } else dr.add.set(m.id, v);
-    });
-    toast(`Добавлено в список: ${ms.length}. Не забудьте «Сохранить».`);
-    redraw(); list();
+  /* окно коллектива: галочки по составу, «Готово» переносит выбор в список мероприятия */
+  const pickTeam = tid => {
+    const e = evNow(); if (!e) return;
+    const t = S.teams.find(x => x.id === tid), inEv = inList(e), ms = teamMs(tid);
+    const P = openSheet({ title: t ? t.name : 'Без коллектива' });
+    P.body.innerHTML = `<button class="btn" type="button" data-pall></button><div class="pick" style="max-height:none">${ms.map(m => `<label class="rb-p"><input type="checkbox" value="${esc(m.id)}" ${inEv.has(m.id) ? 'checked' : ''}><span><b>${esc(m.fio)}</b><small>${esc(m.group ? 'гр. ' + m.group : '')}</small></span></label>`).join('')}</div>`;
+    P.foot.innerHTML = '<button class="btn" data-close>Отмена</button><button class="btn pri" data-ok>Готово</button>';
+    const boxes = $$('input', P.body), all = $('[data-pall]', P.body);
+    const label = () => { all.textContent = boxes.every(b => b.checked) ? 'Снять всех' : 'Отметить всех'; };
+    label(); P.body.addEventListener('change', label);
+    all.onclick = () => { const on = !boxes.every(b => b.checked); boxes.forEach(b => { b.checked = on; }); label(); };
+    $('[data-ok]', P.foot).onclick = () => {
+      const ev = evNow(); if (!ev) return;
+      boxes.forEach(b => setIn(ev, b.value, b.checked));
+      closeSheet(P); redraw(); list();
+    };
   };
-  L.body.addEventListener('click', ev => {
-    const t = ev.target.closest('[data-tf]');
-    if (t) { tf = t.dataset.tf; $$('[data-tf]', L.body).forEach(x => x.setAttribute('aria-pressed', x === t)); open = null; list(); return; }
-    if (ev.target.closest('[data-addck]')) { addChecked(); return; }
-    if (ev.target.closest('[data-ckall]')) {
-      const e = S.events.find(x => x.id === id); if (!e) return;
-      const vis = shown(inList(e)).slice(0, 150), on = !vis.every(m => chk.has(m.id));
-      vis.forEach(m => on ? chk.add(m.id) : chk.delete(m.id)); list();
-    }
+  L.body.addEventListener('click', ev => { const t = ev.target.closest('[data-rt]'); if (t) pickTeam(t.dataset.rt); });
+  L.body.addEventListener('change', ev => {
+    if (ev.target.type !== 'checkbox') return;
+    const e = evNow(); if (!e) return;
+    setIn(e, ev.target.value, ev.target.checked); redraw(); list();
   });
-  $('#pq', L.body).addEventListener('input', ev => { q = ev.target.value; open = null; list(); });
-  $('#pk', L.body).addEventListener('click', ev => {
-    const it = ev.target.closest('[data-m]'); if (!it) return; const mid = it.dataset.m;
-    if (ev.target.matches('[data-ck]')) { ev.target.checked ? chk.add(mid) : chk.delete(mid); list(); return; }
-    if (ev.target.closest('[data-tg]')) { open = open === mid ? null : mid; list(); return; }
-    const c = ev.target.closest('[data-c]'); if (c) { sel[mid].category = c.dataset.c; list(); return; }
-    const p = ev.target.closest('[data-pl]'); if (p) { sel[mid].place = p.dataset.pl; list(); return; }
-    if (ev.target.closest('[data-go]')) {
-      const e = S.events.find(x => x.id === id), m = S.members.find(x => x.id === mid);
-      if (inList(e).has(mid)) { toast('Участник уже в списке'); return; }
-      const v = { category: sel[mid].category, place: sel[mid].place };
-      if (dr.rm.has(mid)) {
-        dr.rm.delete(mid);
-        const o = (e.participants || []).find(x => x.memberId === mid);
-        if (o && (o.category !== v.category || o.place !== v.place)) dr.set.set(mid, v);
-      } else dr.add.set(mid, v);
-      open = null; toast(`${m.fio}: +${fmtN(ptsFor(e.rules, v))} в список`); redraw(); list();
-      setTimeout(() => $('#pq', L.body)?.focus(), 30);
-    }
-  });
+  $('#pq', L.body).addEventListener('input', ev => { q = ev.target.value; list(); });
   L.refresh = list; list();
-  setTimeout(() => $('#pq', L.body).focus(), 80);
 }
 
 /* ---------- teams ---------- */
