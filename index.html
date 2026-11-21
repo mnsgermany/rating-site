@@ -442,7 +442,7 @@ table.mx{border-collapse:collapse;font-size:14px}
 .paper .rp-dt{margin-top:10px}
 @media (max-width:520px){.paper{padding:18px 14px;font-size:13px}.paper .rp-to{margin-left:30%}}
 .pick{display:flex;flex-direction:column;gap:6px;max-height:44vh;overflow:auto;margin-top:10px;padding-right:2px}
-.pick label{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;min-height:48px}
+.pick label{flex:none;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;min-height:48px}
 .pick label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .pick input{width:20px;height:20px;accent-color:var(--accent);flex:none}
 .pick small{display:block;color:var(--muted);font-size:12.5px}
@@ -2035,7 +2035,7 @@ function openEvent(id, justCreated) {
       ${evDetails(e)}
       \x3Cdiv id="phBox" class="phwrap">\x3C/div>
       <div class="sec"><h3>Баллы</h3><button class="btn ghost" data-ew data-rules>${I.edit}Изменить баллы</button></div>
-      <div class="rsum">${cats.map(c => `<span class="pill">${esc(c.name)} · <b class="num">${fmtN(c.points)}</b></span>`).join('')}${pls.map(c => `<span class="pill acc">${esc(c.name)} · <b class="num">${fmtN(c.points)}</b></span>`).join('')}</div>
+      <div class="rsum">${cats.filter(c => Number(c.points)).map(c => `<span class="pill">${esc(c.name)} · <b class="num">${fmtN(c.points)}</b></span>`).join('')}${pls.map(c => `<span class="pill acc">${esc(c.name)} · <b class="num">${fmtN(c.points)}</b></span>`).join('')}</div>
       <div class="sec"><h3>Участники</h3><button class="btn pri" data-ew data-addp>${I.plus}Добавить участников</button></div>
       ${parts.length ? `<div class="plist">${parts.map(x => rowHtml(e, cats, pls, x)).join('')}</div>`
         : '<div class="card" style="box-shadow:none"><div class="empty" style="padding:28px 16px"><p>В мероприятие ещё никто не добавлен.</p></div></div>'}
